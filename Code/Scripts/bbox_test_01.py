@@ -77,7 +77,6 @@ def sensor_bilder_einnahme_einstellen(sensor_lib, bild_breite=IMG_WIDTH,
 
 def process_img(img):
     np_img = np.array(img.raw_data)
-
     img_reshaped = np_img.reshape(IMG_HEIGHT, IMG_WIDTH, 4)
 
     print(img_reshaped[:, :, :3])
