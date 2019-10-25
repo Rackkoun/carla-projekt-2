@@ -77,6 +77,7 @@ def sensor_bilder_einnahme_einstellen(sensor_lib, bild_breite=IMG_WIDTH,
 
 def process_img(img):
     np_img = np.array(img.raw_data)
+
     img_reshaped = np_img.reshape(IMG_HEIGHT, IMG_WIDTH, 4)
 
     print(img_reshaped[:, :, :3])
@@ -116,9 +117,34 @@ def welt_einstellen(klient, welt, kamera, neue_welt='Town03', synchr=True):
 def zeichneBox(welt, auto_obj=None):
     debug = welt.debug
     w_snap = welt.get_snapshot()
-    print("has ID: ", w_snap.has_actor(auto_obj.id))
-    print("find ID: ", w_snap.find(auto_obj.id))
-    #print("has ID: ", w_snap.has_actor(auto_obj.id))
+    print("W-Snap: ", w_snap)
+    if auto_obj is not None:
+        vtrans = auto_obj.get_transform()
+        bbox = auto_obj.bounding_box
+        bloc = bbox.location
+        b_ext = carla.Vector3D(
+            x=(bloc.x+10) * 2,
+            y=(bloc.y + 10)*2,
+            z=(bloc.z + 10) *2
+        )
+        bbox.extent = b_ext
+        rot = carla.Rotation(
+            pitch=0.0,
+            yaw=0.0,
+            roll=0.0
+        )
+        #bbox.extent
+        debug.draw_box(
+            box=bbox,
+            rotation=rot,
+            thickness=0.2,
+            color=carla.Color(255,12,0),
+            life_time=1.0,
+            persistent_lines=True
+            )
+        print("BBox 0:\n", bloc)
+        print("BBox 1:\n", b_ext)
+        print("BBox:\n", bbox)
 
 def main():
     try:
@@ -132,7 +158,8 @@ def main():
                                         obj_verfeinern='mercedes-benz.*')
 
         obj_lst.append(model_auto)
-        
+        zeichneBox(welt, model_auto)
+
         sensor_lib = welt.get_blueprint_library().find('sensor.camera.rgb')
         sensor, sensor_snapshot = fuege_neuer_sensor_hinzu(welt=welt,
                                         bp_lib=sensor_lib,
@@ -148,7 +175,7 @@ def main():
         wege_typ = carla.LaneType.Driving | carla.LaneType.Sidewalk
         weg_in_der_stadt_debuggen(welt=welt, auto_obj=model_auto, wege_projetieren=True, projektion_type=wege_typ)
         # kamera.listen(lambda img: process_img(img=img))
-        zeichneBox(welt, auto_snapshot)
+        
         print(model_auto.id)
         time.sleep(6)
     
