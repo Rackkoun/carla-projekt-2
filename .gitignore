@@ -1,0 +1,3 @@
+# pictures will be save in png-file.
+# to reduce the among of space png-file will be ignore
+*.png
