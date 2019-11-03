@@ -2,3 +2,4 @@
 # to reduce the among of space png-file will be ignore
 .vscode
 *.png
+PythonAPI/
