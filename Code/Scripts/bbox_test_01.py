@@ -57,7 +57,7 @@ def fuege_neuer_sensor_hinzu(welt, bp_lib, verbundene_obj, loc_x=1.5, loc_y=0.0,
 
     sensor = welt.spawn_actor(bp_lib, sensor_tranform, attach_to=verbundene_obj)
     sensor_snapshot = welt.get_snapshot()
-    welt.wait_for_tick()
+    #welt.wait_for_tick()
 
     return sensor, sensor_snapshot
 # 3- stelle Objekt-Verhalten ein
@@ -76,12 +76,13 @@ def sensor_bilder_einnahme_einstellen(sensor_lib, bild_breite=IMG_WIDTH,
     print("Sensoreinstellungen aktualisiert!")
 
 def process_img(img):
-    np_img = np.array(img.raw_data)
+    #np_img = np.array(img.raw_data)
 
-    img_reshaped = np_img.reshape(IMG_HEIGHT, IMG_WIDTH, 4)
+    #img_reshaped = np_img.reshape(IMG_HEIGHT, IMG_WIDTH, 4)
 
-    print(img_reshaped[:, :, :3])
-    #img.save_to_disk('bilder/autos/test01/%04d.png'% img.frame)
+    #print(img_reshaped[:, :, :3])
+    img.save_to_disk('bilder/autos/test01/%04d.png'% img.frame)
+
 def obj_daten_debuggen(auto_obj):
     print("Acc: {}, Vel: {}, Loc: {}".format(auto_obj.get_acceleration(), auto_obj.get_velocity(), auto_obj.get_location()))
     box = auto_obj.bounding_box
@@ -140,6 +141,7 @@ def on_debugging(obj_snap, welt, obj):
             color=carla.Color(250, 10,10),
             life_time=0.0001,
         )
+        #cam.listen(lambda img: process_img(img=img))
         print(vbox.location)
         print("WORLD TICK: ", w_id)
     else:
@@ -172,7 +174,7 @@ def main():
 
         wege_typ = carla.LaneType.Driving | carla.LaneType.Sidewalk
         #weg_in_der_stadt_debuggen(welt=welt, auto_obj=model_auto, wege_projetieren=True, projektion_type=wege_typ)
-        # kamera.listen(lambda img: process_img(img=img))
+        sensor.listen(lambda img: process_img(img=img))
         welt.on_tick(lambda auto_snapshot: on_debugging(auto_snapshot, welt, model_auto))
         time.sleep(6)
     
