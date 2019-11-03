@@ -114,37 +114,37 @@ def welt_einstellen(klient, welt, kamera, neue_welt='Town03', synchr=True):
     einstellungen.synchronous_mode = synchr
     welt.apply_settings(einstellungen)
 
-def zeichneBox(welt, auto_obj=None):
+# suche ein Objekt in der Welt
+def on_debugging(obj_snap, welt, obj):
     debug = welt.debug
-    w_snap = welt.get_snapshot()
-    print("W-Snap: ", w_snap)
-    if auto_obj is not None:
-        vtrans = auto_obj.get_transform()
-        bbox = auto_obj.bounding_box
-        bloc = bbox.location
-        b_ext = carla.Vector3D(
-            x=(bloc.x+10) * 2,
-            y=(bloc.y + 10)*2,
-            z=(bloc.z + 10) *2
-        )
-        bbox.extent = b_ext
-        rot = carla.Rotation(
-            pitch=0.0,
-            yaw=0.0,
-            roll=0.0
-        )
-        #bbox.extent
+    #wsnap = welt.wait_for_tick(2.0)
+    if obj.is_alive:
+        print("Actor is stil alive...")
+        print("retrieve actor snap")
+        act_snap = obj_snap.find(obj.id)
+        print("retrieve actor in the world")
+        act = welt.get_actor(act_snap.id)
+        print("Actor\n", act)
+        # set box
+        vbox = act.bounding_box
+        vbox.location = act.get_location()
+        vbox.extent.x = act.bounding_box.extent.x
+        vbox.extent.y = act.bounding_box.extent.y
+        vbox.extent.z = act.bounding_box.extent.z + 0.5
+        print("drawing debug...")
+        w_id = welt.tick()
         debug.draw_box(
-            box=bbox,
-            rotation=rot,
-            thickness=0.2,
-            color=carla.Color(255,12,0),
-            life_time=1.0,
-            persistent_lines=True
-            )
-        print("BBox 0:\n", bloc)
-        print("BBox 1:\n", b_ext)
-        print("BBox:\n", bbox)
+            box=vbox,
+            rotation=act.get_transform().rotation,
+            thickness=0.1,
+            color=carla.Color(250, 10,10),
+            life_time=0.0001,
+        )
+        print(vbox.location)
+        print("WORLD TICK: ", w_id)
+    else:
+        print("Actor is not alive!")
+    return obj_snap
 
 def main():
     try:
@@ -158,7 +158,6 @@ def main():
                                         obj_verfeinern='mercedes-benz.*')
 
         obj_lst.append(model_auto)
-        zeichneBox(welt, model_auto)
 
         sensor_lib = welt.get_blueprint_library().find('sensor.camera.rgb')
         sensor, sensor_snapshot = fuege_neuer_sensor_hinzu(welt=welt,
@@ -170,13 +169,11 @@ def main():
 
         sensor_bilder_einnahme_einstellen(sensor_lib)
         auto_verhalten_einstellen(model_auto, 1.0, 0.0)
-        obj_daten_debuggen(model_auto)
 
         wege_typ = carla.LaneType.Driving | carla.LaneType.Sidewalk
-        weg_in_der_stadt_debuggen(welt=welt, auto_obj=model_auto, wege_projetieren=True, projektion_type=wege_typ)
+        #weg_in_der_stadt_debuggen(welt=welt, auto_obj=model_auto, wege_projetieren=True, projektion_type=wege_typ)
         # kamera.listen(lambda img: process_img(img=img))
-        
-        print(model_auto.id)
+        welt.on_tick(lambda auto_snapshot: on_debugging(auto_snapshot, welt, model_auto))
         time.sleep(6)
     
     finally:
