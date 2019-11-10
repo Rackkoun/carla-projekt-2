@@ -137,13 +137,25 @@ def on_debugging(obj_snap, welt, obj):
         debug.draw_box(
             box=vbox,
             rotation=act.get_transform().rotation,
-            thickness=0.1,
+            thickness=0.16,
             color=carla.Color(250, 10,10),
-            life_time=0.0001,
+            life_time=0.01
+        )
+        # draw id
+        sloc = act.get_location()
+        sloc.z += 2.2 
+        debug.draw_string(
+            location=sloc,
+            text="Id: {}".format(act_snap.id),
+            draw_shadow=False,
+            color=carla.Color(250, 255, 255)
+            #life_time=0.01
         )
         #cam.listen(lambda img: process_img(img=img))
         print(vbox.location)
         print("WORLD TICK: ", w_id)
+        print("Auto iD: ", act_snap.id)
+        
     else:
         print("Actor is not alive!")
     return obj_snap
@@ -174,7 +186,7 @@ def main():
 
         wege_typ = carla.LaneType.Driving | carla.LaneType.Sidewalk
         #weg_in_der_stadt_debuggen(welt=welt, auto_obj=model_auto, wege_projetieren=True, projektion_type=wege_typ)
-        sensor.listen(lambda img: process_img(img=img))
+        #sensor.listen(lambda img: process_img(img=img))
         welt.on_tick(lambda auto_snapshot: on_debugging(auto_snapshot, welt, model_auto))
         time.sleep(6)
     
