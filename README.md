@@ -8,3 +8,7 @@ This project is currently implemented using Carla-API Version 0.9.6 for Linux. T
 While debugging an object in movement, the box can appear move back to the current position of the object.
 
 ![Vehicle debug](./img/box_verzoegerung.png)
+
+Tracking an object with its Id occures without (a big) latency as trying to encapsulapte it in a box
+
+![Vehicle debug](./img/id_sichtbar.png)

@@ -126,20 +126,22 @@ def on_debugging(obj_snap, welt, obj):
         print("retrieve actor in the world")
         act = welt.get_actor(act_snap.id)
         print("Actor\n", act)
-        # set box
-        vbox = act.bounding_box
-        vbox.location = act.get_location()
-        vbox.extent.x = act.bounding_box.extent.x
-        vbox.extent.y = act.bounding_box.extent.y
-        vbox.extent.z = act.bounding_box.extent.z + 0.5
+
         print("drawing debug...")
         w_id = welt.tick()
         debug.draw_box(
-            box=vbox,
+            box=carla.BoundingBox(
+                act.get_location(),
+                carla.Vector3D(
+                    x=act.bounding_box.extent.x,
+                    y=act.bounding_box.extent.y,
+                    z=act.bounding_box.extent.z + 0.5
+                )
+            ),
             rotation=act.get_transform().rotation,
             thickness=0.16,
             color=carla.Color(250, 10,10),
-            life_time=0.01
+            life_time=0.001
         )
         # draw id
         sloc = act.get_location()
@@ -152,7 +154,7 @@ def on_debugging(obj_snap, welt, obj):
             #life_time=0.01
         )
         #cam.listen(lambda img: process_img(img=img))
-        print(vbox.location)
+        print(act.get_location())
         print("WORLD TICK: ", w_id)
         print("Auto iD: ", act_snap.id)
         
