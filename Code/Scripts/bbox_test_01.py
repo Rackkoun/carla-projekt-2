@@ -14,11 +14,33 @@ import carla
 import random
 import logging
 import time
+from datetime import datetime
 import numpy as np
+
+import json
 
 obj_lst = []
 IMG_WIDTH =640
 IMG_HEIGHT = 480
+
+PATH = './Code/File/'
+#file_name = os.path.join(PATH,"debugging_info.json")
+
+start_time = time.time()
+
+carla_obj = {}
+carla_obj['carla_object'] = []
+carla_obj_vehicle = {
+    "id":0,
+    "type":"",
+    'debug_infos':[]
+    }
+vehicle_debug_infos = {}
+
+def debug_to_json_file(debug_inf, f_name):
+    file_name = os.path.join(PATH,"{}_{}.json".format(f_name, datetime.now()))
+    with open(file_name, "w", encoding='utf-8') as f:
+        f.write(json.dumps(debug_inf, indent=3, ensure_ascii=False))
 
 # 1- erzeuge eine Klient-Instanz und gebe ihm zurueck samt ihrer Welt
 def initialisiere_klient_instanz():
@@ -39,7 +61,7 @@ def fuege_neues_auto_hinzu(welt, bp_lib, obj_location_int, obj_class='vehicle', 
         obj_pos = welt.get_map().get_spawn_points()[obj_location_int]
         neues_obj = welt.spawn_actor(obj_bp, obj_pos)
         neues_obj_snapshot = welt.get_snapshot()
-        welt.wait_for_tick()
+        welt.tick()
         print("Objekt hinzugefuegt")
     else:
         obj_bp = random.choice(bp_lib.filter(obj_class + str('.') + obj_verfeinern))
@@ -57,6 +79,7 @@ def fuege_neuer_sensor_hinzu(welt, bp_lib, verbundene_obj, loc_x=1.5, loc_y=0.0,
 
     sensor = welt.spawn_actor(bp_lib, sensor_tranform, attach_to=verbundene_obj)
     sensor_snapshot = welt.get_snapshot()
+    welt.tick()
     #welt.wait_for_tick()
 
     return sensor, sensor_snapshot
@@ -118,6 +141,7 @@ def welt_einstellen(klient, welt, kamera, neue_welt='Town03', synchr=True):
 # suche ein Objekt in der Welt
 def on_debugging(obj_snap, welt, obj):
     debug = welt.debug
+    carla_obj
     #wsnap = welt.wait_for_tick(2.0)
     if obj.is_alive:
         print("Actor is stil alive...")
@@ -126,8 +150,12 @@ def on_debugging(obj_snap, welt, obj):
         print("retrieve actor in the world")
         act = welt.get_actor(act_snap.id)
         print("Actor\n", act)
-
+        print("ID: ", act.id)
+        print("type: ", act.type_id)
         print("drawing debug...")
+
+        carla_obj_vehicle['id'] = act.id
+        carla_obj_vehicle['type'] = act.type_id
         w_id = welt.tick()
         debug.draw_box(
             box=carla.BoundingBox(
@@ -153,13 +181,28 @@ def on_debugging(obj_snap, welt, obj):
             color=carla.Color(250, 255, 255)
             #life_time=0.01
         )
+
+        vehicle_debug_infos['location'] = {
+            'x':act.get_location().x,
+            'y':act.get_location().y,
+            'z':act.get_location().z
+        }
+        vehicle_debug_infos['extent'] = {
+            'x':act.bounding_box.extent.x,
+            'y':act.bounding_box.extent.y,
+            'z':act.bounding_box.extent.z + 0.5
+        }
+        
+        carla_obj_vehicle['debug_infos'].append(vehicle_debug_infos)
         #cam.listen(lambda img: process_img(img=img))
         print(act.get_location())
-        print("WORLD TICK: ", w_id)
-        print("Auto iD: ", act_snap.id)
         
+        print("Auto iD: ", act_snap.id)
+        print("WORLD TICK: ", w_id)
     else:
         print("Actor is not alive!")
+        carla_obj['carla_object'].append(carla_obj_vehicle)
+        debug_to_json_file(carla_obj, "debug_infos")
     return obj_snap
 
 def main():
@@ -189,6 +232,7 @@ def main():
         wege_typ = carla.LaneType.Driving | carla.LaneType.Sidewalk
         #weg_in_der_stadt_debuggen(welt=welt, auto_obj=model_auto, wege_projetieren=True, projektion_type=wege_typ)
         #sensor.listen(lambda img: process_img(img=img))
+        
         welt.on_tick(lambda auto_snapshot: on_debugging(auto_snapshot, welt, model_auto))
         time.sleep(6)
     
