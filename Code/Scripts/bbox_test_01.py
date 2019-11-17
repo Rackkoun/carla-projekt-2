@@ -24,7 +24,6 @@ IMG_WIDTH =640
 IMG_HEIGHT = 480
 
 PATH = './Code/File/'
-#file_name = os.path.join(PATH,"debugging_info.json")
 
 start_time = time.time()
 
@@ -79,8 +78,8 @@ def fuege_neuer_sensor_hinzu(welt, bp_lib, verbundene_obj, loc_x=1.5, loc_y=0.0,
 
     sensor = welt.spawn_actor(bp_lib, sensor_tranform, attach_to=verbundene_obj)
     sensor_snapshot = welt.get_snapshot()
-    welt.tick()
-    #welt.wait_for_tick()
+    #welt.tick()
+    welt.wait_for_tick()
 
     return sensor, sensor_snapshot
 # 3- stelle Objekt-Verhalten ein
@@ -99,11 +98,6 @@ def sensor_bilder_einnahme_einstellen(sensor_lib, bild_breite=IMG_WIDTH,
     print("Sensoreinstellungen aktualisiert!")
 
 def process_img(img):
-    #np_img = np.array(img.raw_data)
-
-    #img_reshaped = np_img.reshape(IMG_HEIGHT, IMG_WIDTH, 4)
-
-    #print(img_reshaped[:, :, :3])
     img.save_to_disk('bilder/autos/test01/%04d.png'% img.frame)
 
 def obj_daten_debuggen(auto_obj):
@@ -141,14 +135,13 @@ def welt_einstellen(klient, welt, kamera, neue_welt='Town03', synchr=True):
 # suche ein Objekt in der Welt
 def on_debugging(obj_snap, welt, obj):
     debug = welt.debug
-    carla_obj
-    #wsnap = welt.wait_for_tick(2.0)
     if obj.is_alive:
         print("Actor is stil alive...")
         print("retrieve actor snap")
         act_snap = obj_snap.find(obj.id)
         print("retrieve actor in the world")
         act = welt.get_actor(act_snap.id)
+
         print("Actor\n", act)
         print("ID: ", act.id)
         print("type: ", act.type_id)
@@ -208,7 +201,7 @@ def on_debugging(obj_snap, welt, obj):
 def main():
     try:
         klient, welt, blueprint_lib = initialisiere_klient_instanz()
-
+        
         wetter_einstellen(welt, 80.0, 1.0, 5.0)
 
         model_auto, auto_snapshot = fuege_neues_auto_hinzu(welt=welt,
@@ -219,6 +212,7 @@ def main():
         obj_lst.append(model_auto)
 
         sensor_lib = welt.get_blueprint_library().find('sensor.camera.rgb')
+        sensor_bilder_einnahme_einstellen(sensor_lib)
         sensor, sensor_snapshot = fuege_neuer_sensor_hinzu(welt=welt,
                                         bp_lib=sensor_lib,
                                         verbundene_obj=model_auto)
@@ -226,12 +220,12 @@ def main():
         obj_lst.append(sensor)
         print("Auto-Snap:\n", auto_snapshot, "\nSensor-Snap:\n", sensor_snapshot)
 
-        sensor_bilder_einnahme_einstellen(sensor_lib)
+        
         auto_verhalten_einstellen(model_auto, 1.0, 0.0)
 
         wege_typ = carla.LaneType.Driving | carla.LaneType.Sidewalk
         #weg_in_der_stadt_debuggen(welt=welt, auto_obj=model_auto, wege_projetieren=True, projektion_type=wege_typ)
-        #sensor.listen(lambda img: process_img(img=img))
+        sensor.listen(lambda img: process_img(img=img))
         
         welt.on_tick(lambda auto_snapshot: on_debugging(auto_snapshot, welt, model_auto))
         time.sleep(6)
