@@ -149,14 +149,22 @@ def on_debugging(obj_snap, welt, obj):
 
         carla_obj_vehicle['id'] = act.id
         carla_obj_vehicle['type'] = act.type_id
-        w_id = welt.tick()
+        #w_id = welt.tick()
+        # saving location and extend in tmp var
+        aloc = act.get_location()
+        bbox = act.bounding_box
+        
+        xx = (aloc.x + bbox.location.x) /2.5
+        yx = bbox.extent.y # * 0. mit null multiplizieren, um ein Viereck zu haben
+        zx = bbox.extent.z + 0.7
+
         debug.draw_box(
             box=carla.BoundingBox(
-                act.get_location(),
+                aloc,
                 carla.Vector3D(
-                    x=act.bounding_box.extent.x,
-                    y=act.bounding_box.extent.y,
-                    z=act.bounding_box.extent.z + 0.5
+                    x=xx,
+                    y=yx,
+                    z=zx
                 )
             ),
             rotation=act.get_transform().rotation,
@@ -165,7 +173,7 @@ def on_debugging(obj_snap, welt, obj):
             life_time=0.001
         )
         # draw id
-        sloc = act.get_location()
+        sloc = aloc
         sloc.z += 2.2 
         debug.draw_string(
             location=sloc,
@@ -191,11 +199,11 @@ def on_debugging(obj_snap, welt, obj):
         print(act.get_location())
         
         print("Auto iD: ", act_snap.id)
-        print("WORLD TICK: ", w_id)
+        #print("WORLD TICK: ", w_id)
     else:
         print("Actor is not alive!")
         carla_obj['carla_object'].append(carla_obj_vehicle)
-        debug_to_json_file(carla_obj, "debug_infos")
+        #debug_to_json_file(carla_obj, "debug_infos")
     return obj_snap
 
 def main():
