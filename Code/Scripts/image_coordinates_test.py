@@ -78,3 +78,12 @@ if __name__ == "__main__":
     test_draw=Draw_Box_On_Image()
 
     test_draw.main()
+    
+    #                   witdh
+    #   (x,y)-----------------------
+    #      |                        |
+    #      |                        |
+    #      |                        | height
+    #      |                        |
+    #      |                        |
+    #      |________________________|(x+height, y+width)
