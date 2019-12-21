@@ -77,11 +77,11 @@ def fuege_neuer_sensor_hinzu(welt, bp_lib, verbundene_obj, loc_x=1.5, loc_y=0.0,
     sensor_tranform = carla.Transform(carla.Location(x=loc_x, y=loc_y, z=loc_z))
 
     sensor = welt.spawn_actor(bp_lib, sensor_tranform, attach_to=verbundene_obj)
-    sensor_snapshot = welt.get_snapshot()
+    #sensor_snapshot = welt.get_snapshot()
     #welt.tick()
-    welt.wait_for_tick()
+    #welt.wait_for_tick()
 
-    return sensor, sensor_snapshot
+    return sensor#, sensor_snapshot
 # 3- stelle Objekt-Verhalten ein
 # --> Auto
 def auto_verhalten_einstellen(auto_obj, geschindigkeit, steuerung):
@@ -195,7 +195,7 @@ def on_debugging(obj_snap, welt, obj):
         }
         
         carla_obj_vehicle['debug_infos'].append(vehicle_debug_infos)
-        #cam.listen(lambda img: process_img(img=img))
+        #cam.listen(lambda img: img.save_to_disk('bilder/autos/test01/%04d.png'% img.frame))
         print(act.get_location())
         
         print("Auto iD: ", act_snap.id)
@@ -221,22 +221,26 @@ def main():
 
         sensor_lib = welt.get_blueprint_library().find('sensor.camera.rgb')
         sensor_bilder_einnahme_einstellen(sensor_lib)
-        sensor, sensor_snapshot = fuege_neuer_sensor_hinzu(welt=welt,
+        sensor = fuege_neuer_sensor_hinzu(welt=welt,
                                         bp_lib=sensor_lib,
                                         verbundene_obj=model_auto)
         
         obj_lst.append(sensor)
-        print("Auto-Snap:\n", auto_snapshot, "\nSensor-Snap:\n", sensor_snapshot)
+        print("Auto-Snap:\n", auto_snapshot)
+        print("CAM :", sensor)
 
         
         auto_verhalten_einstellen(model_auto, 1.0, 0.0)
 
         wege_typ = carla.LaneType.Driving | carla.LaneType.Sidewalk
         #weg_in_der_stadt_debuggen(welt=welt, auto_obj=model_auto, wege_projetieren=True, projektion_type=wege_typ)
-        sensor.listen(lambda img: process_img(img=img))
         
         welt.on_tick(lambda auto_snapshot: on_debugging(auto_snapshot, welt, model_auto))
+        sensor.listen(lambda img: process_img(img=img))
         time.sleep(6)
+        if sensor.is_listening is True:
+            print("Stopping sensor listening..")
+            sensor.stop()
     
     finally:
         print("destroying actors...")
