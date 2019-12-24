@@ -97,6 +97,7 @@ class CustomPedestrianManager(object):
         for w in self.walker_ai_lst:
             # if w.is_alive:
             w.stop()
+            w.destroy()
 
         print("AI stopped")
         print("destroying walkers...")
@@ -112,5 +113,3 @@ class CustomPedestrianManager(object):
         self.walkers_id.clear()
         self.walker_lst.clear()
         print("Lists cleared...")
-        self.client.reload_world()
-        print("World reloaded")

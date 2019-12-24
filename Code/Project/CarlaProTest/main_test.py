@@ -10,19 +10,19 @@ def main():
     # provide enough waiting time to avoid RuntimeError while trying
     # while to wait connection answer from the server
     client.set_timeout(20.5)
-    #world = client.get_world()
+    world = client.get_world()
     test_vehicle = CustomVehicleManager(client)
     test_walker = CustomPedestrianManager(client)
 
     try:
         test_vehicle.on_spawn_vehicles(15)
-        print("waiting for server answer before adding another actors")
-        world = client.get_world()
-        world.wait_for_tick()
-        print("done 1")
+        #print("waiting for server answer before adding another actors")
+        #world = client.get_world()
+        #world.wait_for_tick()
         test_walker.on_spawn_walkers(20)
+
         while True:
-            world = client.get_world()
+            #world = client.get_world()
             world.wait_for_tick()
     finally:
         print("Destroying actors...")

@@ -3,7 +3,7 @@
 .vscode
 bilder/
 PythonAPI/
-
+/Code/Project/CarlaProTest/res/screenshots/*.png
 .idea/
 *.log
 __pycache__/
