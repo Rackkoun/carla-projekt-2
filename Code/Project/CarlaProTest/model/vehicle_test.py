@@ -113,7 +113,7 @@ class CustomVehicleManager(object):
         # retrieve object in the world snapshot through it id
         actor_snapshot = world_snapshot.find(actor.id)
         retrieved_actor = world.get_actor(actor_snapshot.id)
-        if retrieved_actor.id == actor_snapshot.id:
+        if retrieved_actor.id == actor_snapshot.id and actor.is_alive:
             print("Actor retrieved: ", retrieved_actor)
             # get location and draw box
             current_location = actor_snapshot.get_transform().location
@@ -142,6 +142,45 @@ class CustomVehicleManager(object):
                 draw_shadow=False,
                 color=Color(254, 254, 254)
             )
+        return world_snapshot
+
+    def on_debug_vehicle_list(self, world, world_snapshot, actor_lst):
+        print("starting debugging...")
+        # enable debugging
+        self.debug = world.debug
+        for actor in actor_lst:
+            # retrieve object in the world snapshot through it id
+            actor_snapshot = world_snapshot.find(actor.id)
+            retrieved_actor = world.get_actor(actor_snapshot.id)
+            if retrieved_actor.id == actor_snapshot.id and actor.is_alive:
+                print("Actor retrieved: ", retrieved_actor)
+                # get location and draw box
+                current_location = actor_snapshot.get_transform().location
+                box = retrieved_actor.bounding_box
+                box.extent.z += 0.5
+                self.debug.draw_box(
+                    box=BoundingBox(
+                        current_location,
+                        Vector3D(
+                            x=box.extent.x,
+                            y=box.extent.y,
+                            z=box.extent.z
+                        )
+                    ),
+                    rotation=actor_snapshot.get_transform().rotation,
+                    thickness=0.11,
+                    color=Color(255, 10, 5),
+                    life_time=0.0001
+                )
+                ####### Draw ID as string #####
+                string_position = current_location
+                string_position.z += 2.2
+                self.debug.draw_string(
+                    location = current_location,
+                    text="Id: {}".format(actor_snapshot.id),
+                    draw_shadow=False,
+                    color=Color(254, 254, 254)
+                )
         return world_snapshot
 
     def remove_all_vehicles(self):

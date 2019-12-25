@@ -24,6 +24,9 @@ def main():
         pos = len(test_vehicle.vehicle_lst) - 1
         last_vehicle = test_vehicle.vehicle_lst[pos]
         print("ID of the last car: ", last_vehicle.id)
+
+        # get the list of actor
+        actor_lst = test_vehicle.vehicle_lst
         while True:
             # world = client.get_world()
             print("synchronizing the simulator...")
@@ -31,8 +34,8 @@ def main():
             print("tick done!: ", tick_id)
             print("trying to debug on tick")
             world.on_tick(
-                lambda world_snapshot: test_vehicle.on_debug_vehicle(world, world.get_snapshot(),
-                                                                     last_vehicle))
+                lambda world_snapshot: test_vehicle.on_debug_vehicle_list(world, world.get_snapshot(),
+                                                                          actor_lst))
             print("Tick done --> saving data")
     finally:
         print("Destroying actors...")
