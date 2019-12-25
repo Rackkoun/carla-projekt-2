@@ -9,21 +9,31 @@ def main():
 
     # provide enough waiting time to avoid RuntimeError while trying
     # while to wait connection answer from the server
-    client.set_timeout(20.5)
+    client.set_timeout(10.5)
     world = client.get_world()
     test_vehicle = CustomVehicleManager(client)
     test_walker = CustomPedestrianManager(client)
 
     try:
-        test_vehicle.on_spawn_vehicles(15)
-        #print("waiting for server answer before adding another actors")
-        #world = client.get_world()
-        #world.wait_for_tick()
-        test_walker.on_spawn_walkers(20)
-
+        test_vehicle.on_spawn_vehicles(10)
+        # print("waiting for server answer before adding another actors")
+        # world = client.get_world()
+        # world.wait_for_tick()
+        test_walker.on_spawn_walkers(5)
+        print("get the last car")
+        pos = len(test_vehicle.vehicle_lst) - 1
+        last_vehicle = test_vehicle.vehicle_lst[pos]
+        print("ID of the last car: ", last_vehicle.id)
         while True:
-            #world = client.get_world()
-            world.wait_for_tick()
+            # world = client.get_world()
+            print("synchronizing the simulator...")
+            tick_id = world.tick()
+            print("tick done!: ", tick_id)
+            print("trying to debug on tick")
+            world.on_tick(
+                lambda world_snapshot: test_vehicle.on_debug_vehicle(world, world.get_snapshot(),
+                                                                     last_vehicle))
+            print("Tick done --> saving data")
     finally:
         print("Destroying actors...")
         test_vehicle.remove_all_vehicles()

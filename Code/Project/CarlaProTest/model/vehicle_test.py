@@ -9,9 +9,13 @@ import time
 from queue import Queue
 from carla import Transform, Location, Rotation
 from carla import WeatherParameters
+from carla import BoundingBox, Vector3D, Color
+
 
 # source: https://github.com/carla-simulator/scenario_runner/blob/master/scenario_runner.py
 # spurce: https://github.com/carla-simulator/carla/blob/master/PythonAPI/examples/synchronous_mode.py
+# source: https://github.com/carla-simulator/carla/blob/master/Docs/configuring_the_simulation.md
+
 class CustomVehicleManager(object):
     def __init__(self, client):
         self.client = client
@@ -59,7 +63,6 @@ class CustomVehicleManager(object):
                 self.on_attach_senor_to_vehicle(vehicle)
         print("end of methode spawn for vehicles")
         world.wait_for_tick()
-        print("tick in the method reached")
         self.on_starting_listening()
 
     def on_starting_listening(self):
@@ -73,13 +76,13 @@ class CustomVehicleManager(object):
         # retrieve the world through the current client
         world = self.client.get_world()
         weather = WeatherParameters(
-            cloudyness=9.0,
-            precipitation=3.0,
+            cloudyness=1.0,
+            precipitation=1.0,
             sun_altitude_angle=80.0)
         # get the world settings and check if synchronized_mode is enable
         self.settings = world.get_settings()
 
-        #if self.settings.synchronous_mode is not True:
+        # if self.settings.synchronous_mode is not True:
         #    print("enabling synchronized mode...")
         #    self.settings.synchronous_mode = True
         #    self.settings.fixed_delta_seconds = self.delta_seconds
@@ -94,7 +97,7 @@ class CustomVehicleManager(object):
         sensor_bp.set_attribute('image_size_x', '680')
         sensor_bp.set_attribute('image_size_y', '600')
         sensor_bp.set_attribute('fov', '110')
-        sensor_bp.set_attribute('sensor_tick', '2.0')
+        sensor_bp.set_attribute('sensor_tick', '3.0')
         loc = Location(x=-5.5, y=0.0, z=2.8)
         rot = Rotation(pitch=-15)
 
@@ -103,9 +106,47 @@ class CustomVehicleManager(object):
         self.camera_lst.append(sensor)
         print("sensor appended..", sensor)
 
+    def on_debug_vehicle(self, world, world_snapshot, actor):
+        print("starting debugging...")
+        # enable debugging
+        self.debug = world.debug
+        # retrieve object in the world snapshot through it id
+        actor_snapshot = world_snapshot.find(actor.id)
+        retrieved_actor = world.get_actor(actor_snapshot.id)
+        if retrieved_actor.id == actor_snapshot.id:
+            print("Actor retrieved: ", retrieved_actor)
+            # get location and draw box
+            current_location = actor_snapshot.get_transform().location
+            box = retrieved_actor.bounding_box
+            box.extent.z += 0.5
+            self.debug.draw_box(
+                box=BoundingBox(
+                    current_location,
+                    Vector3D(
+                        x=box.extent.x,
+                        y=box.extent.y,
+                        z=box.extent.z
+                    )
+                ),
+                rotation=actor_snapshot.get_transform().rotation,
+                thickness=0.11,
+                color=Color(255, 10, 5),
+                life_time=0.0001
+            )
+            ####### Draw ID as string #####
+            string_position = current_location
+            string_position.z += 2.2
+            self.debug.draw_string(
+                location = current_location,
+                text="Id: {}".format(actor_snapshot.id),
+                draw_shadow=False,
+                color=Color(254, 254, 254)
+            )
+        return world_snapshot
+
     def remove_all_vehicles(self):
         print("removing vehicles...")
         for actor in self.vehicle_lst:
             actor.destroy()
         # self.client.apply_batch_sync([actor.destroy() for actor in self.vehicle_lst])
-        print("World reloaded vehicle")
+        print("vehicles destroyed!")
