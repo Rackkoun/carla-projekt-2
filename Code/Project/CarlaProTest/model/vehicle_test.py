@@ -3,10 +3,21 @@ import sys
 import os
 from datetime import datetime
 import time"""
+import glob
 import logging
+import os
 import random
+import sys
 import time
 from queue import Queue
+try:
+    sys.path.append(glob.glob('../carla-*%d.%d-%s.egg' % (
+        sys.version_info.major,
+        sys.version_info.minor,
+        'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
+except IndexError:
+    pass
+
 from carla import Transform, Location, Rotation
 from carla import WeatherParameters
 from carla import BoundingBox, Vector3D, Color

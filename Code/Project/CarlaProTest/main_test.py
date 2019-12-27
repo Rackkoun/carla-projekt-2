@@ -1,3 +1,13 @@
+import glob
+import os
+import sys
+try:
+    sys.path.append(glob.glob('carla-*%d.%d-%s.egg' % (
+        sys.version_info.major,
+        sys.version_info.minor,
+        'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
+except IndexError:
+    pass
 import carla
 
 from model.vehicle_test import CustomVehicleManager
@@ -10,16 +20,17 @@ def main():
     # provide enough waiting time to avoid RuntimeError while trying
     # while to wait connection answer from the server
     client.set_timeout(10.5)
-    world = client.get_world()
+    #world = client.get_world()
+    world = client.load_world('Town02')
     test_vehicle = CustomVehicleManager(client)
     test_walker = CustomPedestrianManager(client)
 
     try:
-        test_vehicle.on_spawn_vehicles(10)
-        # print("waiting for server answer before adding another actors")
-        # world = client.get_world()
-        # world.wait_for_tick()
-        test_walker.on_spawn_walkers(5)
+        test_vehicle.on_spawn_vehicles(40)
+        print("waiting for server answer before adding another actors")
+        world = client.get_world()
+        world.wait_for_tick()
+        test_walker.on_spawn_walkers(45)
         print("get the last car")
         pos = len(test_vehicle.vehicle_lst) - 1
         last_vehicle = test_vehicle.vehicle_lst[pos]
@@ -39,8 +50,8 @@ def main():
             print("Tick done --> saving data")
     finally:
         print("Destroying actors...")
-        test_vehicle.remove_all_vehicles()
-        test_walker.on_remove_walkers()
+        #test_vehicle.remove_all_vehicles()
+        #test_walker.on_remove_walkers()
 
 
 if __name__ == '__main__':

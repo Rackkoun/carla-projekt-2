@@ -1,9 +1,19 @@
 """
 :@authors:
 """
-
+import glob
+import os
 import random
 import logging
+import sys
+try:
+    sys.path.append(glob.glob('../carla-*%d.%d-%s.egg' % (
+        sys.version_info.major,
+        sys.version_info.minor,
+        'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
+except IndexError:
+    pass
+import carla
 from carla import Transform
 
 """
@@ -38,17 +48,26 @@ class CustomPedestrianManager(object):
         bp = world.get_blueprint_library().filter('walker.pedestrian.*')
         ai_bp = world.get_blueprint_library().find('controller.ai.walker')
 
-        spawn_point_lst = world_map.get_spawn_points()
+        spawn_point_lst = []
+        for i in range(50):
+            spawn_point = carla.Transform()
+            spawn_point.location = world.get_random_location_from_navigation()
+            if (spawn_point.location != None):
+                spawn_point_lst.append(spawn_point)
+
+        #spawn_point_lst = world_map.get_spawn_points()
         number_of_points = len(spawn_point_lst)
         print('Number of points (W):  ', number_of_points)
 
-        if tmp_var < number_of_points < 50:
+        #if tmp_var < number_of_points < 50:
+        if tmp_var < number_of_points:
             #random.shuffle(world_map.get_spawn_points())
             print("feel goog (^ ^)")
         elif tmp_var > number_of_points:
-            msg = 'requested %d vehicles, but could only find %d spawn points'
+            msg = 'requested %d Walkers, but could only find %d spawn points'
             logging.warning(msg, tmp_var, number_of_points)
-            tmp_var = 50
+            #tmp_var = 50
+            tmp_var=number_of_points
 
         for _, transform in enumerate(spawn_point_lst):
             if _ >= tmp_var:
@@ -56,25 +75,45 @@ class CustomPedestrianManager(object):
 
             print("choosing a walker on the library...")
             walker_bp = random.choice(bp)
-            walker = world.spawn_actor(walker_bp, transform)
-            print(_, "Walkers added")
-            self.walker_lst.append(walker)
-        print("adding controller to walker")
-        for i in range(tmp_var):
-            walker_ai = world.spawn_actor(ai_bp, Transform(), self.walker_lst[i])
 
-            walker_goal = world.get_random_location_from_navigation()
-            print("Goal: ", walker_goal)
-            walker_ai.start()
-            walker_ai.go_to_location(walker_goal)
-            walker_ai.set_max_speed(1 + random.random())
-            self.walker_ai_lst.append(walker_ai)
-        print("list content")
-        print("waiting for server answer...")
+            walker = world.try_spawn_actor(walker_bp, transform)
+            if walker != None:
+                print(_, "Walkers added",walker_bp.id)
+                print("walker=",walker)
+                self.walker_lst.append(walker)
+            else:
+                print(_, "Walkers NOT added")
+                print("walker=",walker)
+
+        print("adding controller to walker")
+        control_walker_lst = []
+        for i in range (len(self.walker_lst)):
+            control = world.spawn_actor(ai_bp, Transform(), self.walker_lst[i])
+            control_walker_lst.append(control)
+
+        all_id=[]
+
+        for i in range(len(self.walker_lst)):
+            print("control:",control_walker_lst[i].id)
+            print("walker:",self.walker_lst[i].id)
+            all_id.append(control_walker_lst[i].id)
+            all_id.append(self.walker_lst[i].id)
+
+        all_actors = world.get_actors(all_id)
+
+        print("all actors:",all_actors)
+
         world.wait_for_tick()
-        print("done")
-        print(self.walker_ai_lst)
-        print(self.walker_lst)
+
+        print("Starting the AI Control")
+
+        for i in range(0, len(all_actors), 2):
+            # start walker
+            all_actors[i].start()
+            # set walk to random point
+            all_actors[i].go_to_location(world.get_random_location_from_navigation())
+            # random max speed
+            all_actors[i].set_max_speed(1 + random.random())
 
     def on_remove_walkers(self):
         # self.world = client.get_world()
