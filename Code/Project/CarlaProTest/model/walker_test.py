@@ -101,7 +101,7 @@ class CustomPedestrianManager(object):
 
         all_actors = world.get_actors(all_id)
 
-        print("all actors:",all_actors)
+        print("all actors:", all_actors)
 
         world.wait_for_tick()
 

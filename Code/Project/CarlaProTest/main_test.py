@@ -1,6 +1,7 @@
 import glob
 import os
 import sys
+
 try:
     sys.path.append(glob.glob('carla-*%d.%d-%s.egg' % (
         sys.version_info.major,
@@ -9,28 +10,53 @@ try:
 except IndexError:
     pass
 import carla
-
+from carla import WeatherParameters
 from model.vehicle_test import CustomVehicleManager
 from model.walker_test import CustomPedestrianManager
 
 
-def main():
-    client = carla.Client('localhost', 2000)
+# provide enough waiting time to avoid RuntimeError while trying
+# while to wait connection answer from the server
+def on_setting_world(client, desired_map='Town02'):
+    # retrieve the world through the current client
+    world = client.get_world()
+    current_map = world.get_map()
+    weather = WeatherParameters(
+        cloudyness=1.0,
+        precipitation=1.0,
+        sun_altitude_angle=80.0)
+    # loading the world cause an runtime-exception at the first time
+    # that the program ist launched
+    if current_map.name != desired_map:
+        try:
+            world = client.load_world(desired_map)
+            # get the world settings and check if synchronized_mode is enable
+            client.reload_world()
+            settings = world.get_settings()
+            world.set_weather(weather)
+            world.apply_settings(settings)
+            #client.reload_world()
+            print("Desired Map's name: ", desired_map)
+        except RuntimeError as error:
+            print("Error while changing the town: ", error)
 
-    # provide enough waiting time to avoid RuntimeError while trying
-    # while to wait connection answer from the server
+    return world
+
+
+def main():
+
+    client = carla.Client('localhost', 2000)
     client.set_timeout(10.5)
-    #world = client.get_world()
-    world = client.load_world('Town02')
+    world = on_setting_world(client)
     test_vehicle = CustomVehicleManager(client)
     test_walker = CustomPedestrianManager(client)
 
     try:
-        test_vehicle.on_spawn_vehicles(40)
+        test_vehicle.on_spawn_vehicles(30)
         print("waiting for server answer before adding another actors")
-        world = client.get_world()
-        world.wait_for_tick()
-        test_walker.on_spawn_walkers(45)
+        #world = client.get_world()
+        #world.wait_for_tick()
+        test_walker.on_spawn_walkers(25)
         print("get the last car")
         pos = len(test_vehicle.vehicle_lst) - 1
         last_vehicle = test_vehicle.vehicle_lst[pos]
@@ -38,20 +64,25 @@ def main():
 
         # get the list of actor
         actor_lst = test_vehicle.vehicle_lst
+
+        sensor_lst = test_vehicle.camera_lst
+        #test_vehicle.on_starting_listening(sensor_lst)
         while True:
-            # world = client.get_world()
-            print("synchronizing the simulator...")
+            world = client.get_world()
+            #print("synchronizing the simulator...")
             tick_id = world.tick()
             print("tick done!: ", tick_id)
-            print("trying to debug on tick")
-            world.on_tick(
-                lambda world_snapshot: test_vehicle.on_debug_vehicle_list(world, world.get_snapshot(),
-                                                                          actor_lst))
-            print("Tick done --> saving data")
+            world.on_tick(lambda world_snapshot: test_vehicle.on_debug_vehicle(world, world_snapshot, tick_id))
+            print("end of while")
+            #print("trying to debug on tick")
+            #world.on_tick(
+            #    lambda world_snapshot: test_vehicle.on_debug_vehicle(world, world.get_snapshot(),
+            #                                                         last_vehicle))
+            #print("Tick done --> saving data")
     finally:
         print("Destroying actors...")
-        #test_vehicle.remove_all_vehicles()
-        #test_walker.on_remove_walkers()
+        test_walker.on_remove_walkers()
+        test_vehicle.remove_all_vehicles()
 
 
 if __name__ == '__main__':

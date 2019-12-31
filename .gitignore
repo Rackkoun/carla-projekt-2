@@ -4,6 +4,11 @@
 bilder/
 PythonAPI/
 /Code/Project/CarlaProTest/res/screenshots/*.png
+/Code/Project/CarlaProTest/res/screenshots/../*.png
+/Code/Project/CarlaProTest/res/files/*.png
+/Code/Project/CarlaProTest/res/file/../*.png
+/Code/Project/CarlaProTest/res/files/*.json
+/Code/Project/CarlaProTest/res/file/../*.json
 .idea/
 *.log
 __pycache__/
