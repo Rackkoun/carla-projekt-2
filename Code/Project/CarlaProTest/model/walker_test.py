@@ -1,5 +1,5 @@
 """
-:@authors:
+:@authors: Zanguim K. L, Fozing Y. W., Tchana D. R.
 """
 import glob
 import os

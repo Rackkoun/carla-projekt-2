@@ -1,3 +1,6 @@
+"""
+:@authors: Zanguim K. L, Fozing Y. W., Tchana D. R.
+"""
 import glob
 import os
 import sys
@@ -13,6 +16,7 @@ import carla
 from carla import WeatherParameters
 from model.vehicle_test import CustomVehicleManager
 from model.walker_test import CustomPedestrianManager
+from model.sensor_test import CustomDataDebugger
 
 
 # provide enough waiting time to avoid RuntimeError while trying
@@ -50,18 +54,29 @@ def main():
     world = on_setting_world(client)
     test_vehicle = CustomVehicleManager(client)
     test_walker = CustomPedestrianManager(client)
-
+    test_sensor = CustomDataDebugger(client)
+    actor_id = []
     try:
-        test_vehicle.on_spawn_vehicles(30)
+        test_vehicle.on_spawn_vehicles(15)
         print("waiting for server answer before adding another actors")
         #world = client.get_world()
         #world.wait_for_tick()
-        test_walker.on_spawn_walkers(25)
+        test_walker.on_spawn_walkers(20)
         print("get the last car")
         pos = len(test_vehicle.vehicle_lst) - 1
         last_vehicle = test_vehicle.vehicle_lst[pos]
         print("ID of the last car: ", last_vehicle.id)
 
+        # save all actor_id in the same list
+        for vehicle in test_vehicle.vehicle_lst:
+            actor_id.append((vehicle.id))
+
+        for walker in test_walker.walker_lst:
+            actor_id.append(walker.id)
+
+        print("Number of actors saved in the list: ", len(actor_id))
+
+        test_sensor.on_attach_senor_to_vehicle(last_vehicle, actor_id)
         # get the list of actor
         actor_lst = test_vehicle.vehicle_lst
 
@@ -72,7 +87,7 @@ def main():
             #print("synchronizing the simulator...")
             tick_id = world.tick()
             print("tick done!: ", tick_id)
-            world.on_tick(lambda world_snapshot: test_vehicle.on_debug_vehicle(world, world_snapshot, tick_id))
+            world.on_tick(lambda world_snapshot: test_vehicle.on_debug_vehicle(world, world_snapshot))
             print("end of while")
             #print("trying to debug on tick")
             #world.on_tick(

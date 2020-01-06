@@ -9,6 +9,8 @@ PythonAPI/
 /Code/Project/CarlaProTest/res/file/../*.png
 /Code/Project/CarlaProTest/res/files/*.json
 /Code/Project/CarlaProTest/res/file/../*.json
+/Code/Project/CarlaProTest/gui/Files/../*.png
+/Code/Project/CarlaProTest/gui/Files/../*.json
 .idea/
 *.log
 __pycache__/

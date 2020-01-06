@@ -1,8 +1,6 @@
-"""import carla
-import sys
-import os
-from datetime import datetime
-import time"""
+"""
+:@authors: Zanguim K. L, Fozing Y. W., Tchana D. R.
+"""
 import glob
 import logging
 import os
@@ -23,7 +21,6 @@ except IndexError:
 
 from carla import Transform, Location, Rotation
 from carla import BoundingBox, Vector3D, Color
-from carla import Image
 
 # source: https://github.com/carla-simulator/scenario_runner/blob/master/scenario_runner.py
 # spurce: https://github.com/carla-simulator/carla/blob/master/PythonAPI/examples/synchronous_mode.py
@@ -45,8 +42,8 @@ class CustomVehicleManager(object):
         self.settings = None
         self.frame = None
 
-        self.parent_file_path = os.path.join('res/files/', '{}/'.format(datetime.now().date().strftime('%d_%m_%y')))
-        self.parent_img_path = os.path.join('res/screenshots/', '{}/'.format(datetime.now().date().strftime('%d_%m_%y')))
+        self.parent_file_path = 'gui/Files/Original/'
+        #self.parent_img_path = os.path.join('res/screenshots/', '{}/'.format(datetime.now().date().strftime('%d_%m_%y')))
 
         self.debug_file_dict = {'frame_id': 0, 'img_name': 'no name', 'debug_info': []}
 
@@ -79,9 +76,9 @@ class CustomVehicleManager(object):
             print("Vehicle added: ", vehicle)
             self.vehicle_lst_id.append(vehicle.id)
             print("id ", vehicle.id, " added")
-            if _ == (tmp_var - 1):
-                print("trying to attatch sensor to the last vehicle: ", _)
-                self.on_attach_senor_to_vehicle(vehicle)
+            #if _ == (tmp_var - 1):
+            #    print("trying to attatch sensor to the last vehicle: ", _)
+            #    self.on_attach_senor_to_vehicle(vehicle)
         print("end of methode spawn for vehicles")
         world.wait_for_tick()
 
@@ -104,46 +101,76 @@ class CustomVehicleManager(object):
         queue = Queue()
 
         print("starting listening")
-        self.camera_lst[0].listen(queue.put)
+        #self.camera_lst[0].listen(queue.put)
+        self.camera_lst[0].listen(lambda sensor_data: self.on_listen_data(sensor_data))
+        print("listen......")
         self.img_queue.append(queue)
 
-    def on_debug_vehicle(self, world, world_snapshot, frame_id):
+    def on_listen_data(self, sensor_data):
+        world = self.client.get_world()
+        debug_info_lst = []
+        world_snapshot = world.get_snapshot()
+        actor_lst = world.get_actors(self.vehicle_lst_id)
+        #    # retrieve object in the world snapshot through it id
+        for retrieved_actor in actor_lst:
+            actor_snapshot = world_snapshot.find(retrieved_actor.id)
+
+            if retrieved_actor.is_alive:
+                transform = actor_snapshot.get_transform()
+                location = transform.location
+                rotation = transform.rotation
+                box = retrieved_actor.bounding_box
+                # add or update info in the dictionnary
+                self.on_update_dict(retrieved_actor, location, box, debug_info_lst)
+        # write the result in file and save picture
+        #img = Image(sensor_data)
+
+        sensor_data.save_to_disk(os.path.join(self.parent_file_path, '{}'.format(sensor_data.frame)))
+        print("Img created: ", sensor_data)
+        self.debug_file_dict['frame_id'] = sensor_data.frame
+        self.debug_file_dict['img_name'] = '{}.png'.format(sensor_data.frame)
+        self.debug_file_dict['debug_info'] = debug_info_lst
+        self.write_info_in_json_file(self.debug_file_dict, sensor_data.frame)
+        print("img saved! (^ ^)")
+        return sensor_data
+
+    def on_debug_vehicle(self, world, world_snapshot):
         self.debug = world.debug
-        img = self.img_queue[0].get()
-        print("IMG get from queue: ", img)
+        #img = self.img_queue[0].get()
+        #print("IMG get from queue: ", img)
 
-        if img.frame: # to get the desired picture's name in the json file
-            print("same frame as the tick frame")
-            self.debug_file_dict['frame_id'] = img.frame
-            self.debug_file_dict['img_name'] = 'img_{}.png'.format(img.frame)
-            debug_info_lst = []
-            # get actor list
-            actor_lst = world.get_actors(self.vehicle_lst_id)
-            # retrieve object in the world snapshot through it id
-            for retrieved_actor in actor_lst:
-                actor_snapshot = world_snapshot.find(retrieved_actor.id)
+        #if img.frame: # to get the desired picture's name in the json file
+        #    print("same frame as the tick frame")
+        #    self.debug_file_dict['frame_id'] = img.frame
+        #    self.debug_file_dict['img_name'] = 'img_{}.png'.format(img.frame)
+        #    debug_info_lst = []
+        #    # get actor list
+        actor_lst = world.get_actors(self.vehicle_lst_id)
+        #    # retrieve object in the world snapshot through it id
+        for retrieved_actor in actor_lst:
+            actor_snapshot = world_snapshot.find(retrieved_actor.id)
 
-                if retrieved_actor.is_alive:
-                    transform = actor_snapshot.get_transform()
-                    location = transform.location
-                    rotation = transform.rotation
-                    box = retrieved_actor.bounding_box
-                    # extent_z = 0.5
-                    # actor_id = retrieved_actor.id
+            if retrieved_actor.is_alive:
+                transform = actor_snapshot.get_transform()
+                location = transform.location
+                rotation = transform.rotation
+                box = retrieved_actor.bounding_box
+                #    # extent_z = 0.5
+                #    # actor_id = retrieved_actor.id
 
-                    self.draw_3d_box_and_id(location, rotation, box, retrieved_actor, debug_info_lst)
+                self.draw_3d_box_and_id(location, rotation, box, retrieved_actor)
 
                 # write the result in file and save picture
-                img.save_to_disk(os.path.join(self.parent_img_path, 'img_{}'.format(img.frame)))
-                print("Img created: ", img)
-                self.debug_file_dict['debug_info'] = debug_info_lst
-                self.write_info_in_json_file(self.debug_file_dict, img.frame)
+                #img.save_to_disk(os.path.join(self.parent_img_path, 'img_{}'.format(img.frame)))
+                #print("Img created: ", img)
+                #self.debug_file_dict['debug_info'] = debug_info_lst
+                #self.write_info_in_json_file(self.debug_file_dict, img.frame)
 
-                print("img saved! (^ ^)")
-            print("returning snapshot.....")
+                #print("img saved! (^ ^)")
+        print("returning snapshot.....")
         return world_snapshot
 
-    def draw_3d_box_and_id(self, location, rotation, box, actor, debug_lst):
+    def draw_3d_box_and_id(self, location, rotation, box, actor):
         ########## Draw 3D Box ###########
         box.extent.z += 0.7
         self.debug.draw_box(
@@ -172,7 +199,7 @@ class CustomVehicleManager(object):
         )
 
         # add or update info in the dictionnary
-        self.on_update_dict(actor, location, box, debug_lst)
+        #self.on_update_dict(actor, location, box, debug_lst)
 
     # update the information in the section debug-infos of the dict
     def on_update_dict(self, actor, location, actor_box, debug_lst):
@@ -197,10 +224,11 @@ class CustomVehicleManager(object):
         debug_lst.append(actor_dict)
 
     def write_info_in_json_file(self, debug_dict, frame_id):
-        self.create_or_update_dir(self.parent_file_path)
-        file_name = os.path.join(self.parent_file_path, 'file_{}.json'.format(frame_id))
+        #self.create_or_update_dir(self.parent_file_path)
+        file_name = os.path.join(self.parent_file_path, '{}.json'.format(frame_id))
         with open(file_name, 'w', encoding='utf-8') as f:
             f.write(json.dumps(debug_dict, indent=3, ensure_ascii=False))
+        print('File wrote (+ +)')
 
     # create director if it not exists to avoid FileNotFoundError
     # only need in while creating the json file
