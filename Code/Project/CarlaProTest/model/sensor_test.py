@@ -15,8 +15,8 @@ try:
         'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
 except IndexError:
     pass
-from carla import Image, Transform, Location, Rotation
-
+from carla import Transform, Location, Rotation
+from carla import BoundingBox, Vector3D, Color
 
 class CustomDataDebugger(object):
 
@@ -129,6 +129,71 @@ class CustomDataDebugger(object):
         # self.camera_lst[0].listen(queue.put)
         self.sensor.listen(lambda sensor_data: self.on_listen_data(sensor_data, actor_lst_id))
         print("listen......")
+
+    def on_debugged(self, world, world_snapshot, actor_lst_id):
+        self.debug = world.debug
+        #img = self.img_queue[0].get()
+        #print("IMG get from queue: ", img)
+
+        #if img.frame: # to get the desired picture's name in the json file
+        #    print("same frame as the tick frame")
+        #    self.debug_file_dict['frame_id'] = img.frame
+        #    self.debug_file_dict['img_name'] = 'img_{}.png'.format(img.frame)
+        #    debug_info_lst = []
+        #    # get actor list
+        actor_lst = world.get_actors(actor_lst_id)
+        #    # retrieve object in the world snapshot through it id
+        for retrieved_actor in actor_lst:
+            actor_snapshot = world_snapshot.find(retrieved_actor.id)
+
+            if retrieved_actor.is_alive:
+                transform = actor_snapshot.get_transform()
+                location = transform.location
+                rotation = transform.rotation
+                box = retrieved_actor.bounding_box
+                #    # extent_z = 0.5
+                #    # actor_id = retrieved_actor.id
+                print('Actor retrieved: ', retrieved_actor)
+
+                self.draw_3d_box_and_id(location, rotation, box, retrieved_actor)
+
+                # write the result in file and save picture
+                #img.save_to_disk(os.path.join(self.parent_img_path, 'img_{}'.format(img.frame)))
+                #print("Img created: ", img)
+                #self.debug_file_dict['debug_info'] = debug_info_lst
+                #self.write_info_in_json_file(self.debug_file_dict, img.frame)
+
+                #print("img saved! (^ ^)")
+        print("returning snapshot.....")
+        return world_snapshot
+
+    def draw_3d_box_and_id(self, location, rotation, box, actor):
+        ########## Draw 3D Box ###########
+        box.extent.z += 0.7
+        self.debug.draw_box(
+            box=BoundingBox(
+                location,
+                Vector3D(
+                    x=box.extent.x,
+                    y=box.extent.y,
+                    z=box.extent.z
+                )
+            ),
+            rotation=rotation,
+            thickness=0.13,
+            color=Color(255, 10, 5),
+            life_time=0.0001
+        )
+
+        ####### Draw ID as string #####
+        string_position = location
+        string_position.z += 2.2
+        self.debug.draw_string(
+            location=string_position,
+            text="Id: {}".format(actor.id),
+            draw_shadow=False,
+            color=Color(254, 254, 254)
+        )
 
     def on_stopping_listening(self):
         if self.sensor is not None and self.sensor.is_listening:

@@ -87,7 +87,8 @@ def main():
             #print("synchronizing the simulator...")
             tick_id = world.tick()
             print("tick done!: ", tick_id)
-            world.on_tick(lambda world_snapshot: test_vehicle.on_debug_vehicle(world, world_snapshot))
+            world.on_tick(lambda world_snapshot: test_sensor.on_debugged(world, world_snapshot,actor_id))
+            #world.on_tick(lambda world_snapshot: test_vehicle.on_debug_vehicle(world, world_snapshot))
             print("end of while")
             #print("trying to debug on tick")
             #world.on_tick(
@@ -96,6 +97,7 @@ def main():
             #print("Tick done --> saving data")
     finally:
         print("Destroying actors...")
+        test_sensor.on_stopping_listening()
         test_walker.on_remove_walkers()
         test_vehicle.remove_all_vehicles()
 
