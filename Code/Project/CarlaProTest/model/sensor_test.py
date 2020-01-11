@@ -15,6 +15,7 @@ except IndexError:
     pass
 from carla import Transform, Location, Rotation
 from carla import BoundingBox, Vector3D, Color
+from carla import ColorConverter
 
 
 class CustomDataDebugger(object):
@@ -28,20 +29,31 @@ class CustomDataDebugger(object):
 
     def __init__(self, client):
         self.client = client
+        world = self.client.get_world()
+
+        # sensor_bp = world.get_blueprint_library()
+        # self.camera_rgb = None  # sensor_bp.find('sensor.camera.rgb')
+        # self.camera_semseg = None  # sensor_bp.find('sensor.camera.semantic_segmentation')
+        # self.camera_depth = None  # sensor_bp.find('sensor.camera.depth')
+
         self.sensor = None  # to save the actual used sensor or camera
         self.debug = None  # to activate the debugging in the current world
-        self.parent_file_path = 'gui/Files/Original/'  # path to save generated images and json files
-        self.img_width = 680  # image width; suitable to change the Image resolution
-        self.img_height = 600
-        self.fov = 110
+
+        self.json_path = 'res/files/json/'  # path to save generated images and json files
+        self.img_semseg_path = 'res/files/semseg/'
+        self.img_depth_path = 'res/files/depth/'
+        self.img_rgb_path = 'res/files/rgb/'
+        self.img_width = 640  # image width; suitable to change the Image resolution
+        self.img_height = 680
+        self.fov = 100
         self.tick = 3.0  # images and json files will be generated every 3 ticks
-        world = self.client.get_world()
+
         self.sensor_bp = world.get_blueprint_library().filter('sensor.*')  # get all sensors (camera inclusive)
 
         self.debug_file_dict = {  # design the structure to save information in the json file
             'sensor_frame': 0,
-            'sensor_specs': {'frame': 0, 'transform': {'location': {'x': 0.0, 'y': 0.0, 'z': 0.0},
-                                                       'rotation': {'roll': 0, 'pitch': 0, 'yaw': 0}}},
+            'sensor_specs': {'transform': {'location': {'x': 0.0, 'y': 0.0, 'z': 0.0},
+                                           'rotation': {'roll': 0, 'pitch': 0, 'yaw': 0}}},
             'img_name': 'no name',
             'img_specs': {'width': self.img_width, 'height': self.img_height, 'fov': self.fov},
             'debug_info': []  # placeholder to save all information of spawned actors
@@ -82,11 +94,18 @@ class CustomDataDebugger(object):
         self.debug_file_dict['sensor_specs']['transform']['rotation'] = rotation_dict
 
         # save the generated image in the disk
-        sensor_data.save_to_disk(os.path.join(self.parent_file_path, '{}'.format(sensor_data.frame)))
+        semseg_convertor = ColorConverter.CityScapesPalette
+        depth_convertor = ColorConverter.Depth
+        # save in folder for original images
+        sensor_data.save_to_disk(os.path.join(self.img_rgb_path, '{}'.format(sensor_data.frame)))
+        # save in folder for semantic segmented images
+        sensor_data.save_to_disk(os.path.join(self.img_semseg_path, '{}'.format(sensor_data.frame)), semseg_convertor)
+        # save in folder for depth converted images
+        sensor_data.save_to_disk(os.path.join(self.img_depth_path, '{}'.format(sensor_data.frame)), depth_convertor)
         print("Img created: ", sensor_data)
 
         # update the dictionary's information
-        self.debug_file_dict['frame_id'] = sensor_data.frame
+        self.debug_file_dict['sensor_frame'] = sensor_data.frame
         self.debug_file_dict['img_name'] = '{}.png'.format(sensor_data.frame)
         self.debug_file_dict['debug_info'] = debug_info_lst
 
@@ -119,7 +138,7 @@ class CustomDataDebugger(object):
 
     # Method to convert a python-dict in json-format and then write it in the disk
     def write_info_in_json_file(self, debug_dict, frame_id):
-        file_name = os.path.join(self.parent_file_path, '{}.json'.format(frame_id))
+        file_name = os.path.join(self.json_path, '{}.json'.format(frame_id))
         with open(file_name, 'w', encoding='utf-8') as f:
             f.write(json.dumps(debug_dict, indent=3, ensure_ascii=False))
         print('File wrote (+ +)')
@@ -134,27 +153,42 @@ class CustomDataDebugger(object):
         :return:
         """
         world = self.client.get_world()
-        sensor_bp = self.sensor_bp.find(sensor_type)  # find the selected sensor in the library
+        sensor_bp = self.config_camera(sensor_type)  # find the selected sensor in the library
+        # camera_rgb_bp = self.config_camera('sensor.camera.rgb')
+        # camera_semseg_bp = self.config_camera('sensor.camera.semantic_segmentation')
+        # camera_depth_bp = self.config_camera('sensor.camera.depth')
 
         # set the sensor attributes
-        sensor_bp.set_attribute('image_size_x', str(self.img_width))
-        sensor_bp.set_attribute('image_size_y', str(self.img_height))
-        sensor_bp.set_attribute('fov', str(self.fov))
-        sensor_bp.set_attribute('sensor_tick', str(self.tick))
-        loc = Location(x=-15.5, y=0.0, z=10.8)
-        rot = Rotation(pitch=-15, yaw=10)
+        # sensor_bp.set_attribute('image_size_x', str(self.img_width))
+        # sensor_bp.set_attribute('image_size_y', str(self.img_height))
+        # sensor_bp.set_attribute('fov', str(self.fov))
+        # sensor_bp.set_attribute('sensor_tick', str(self.tick))
+        loc = Location(x=-5.5, y=0.0, z=1.8)
+        rot = Rotation(roll=0, pitch=0, yaw=0)
         location_dict = {'x': loc.x, 'y': loc.y, 'z': loc.z}
         rotation_dict = {'roll': rot.roll, 'pitch': rot.pitch, 'yaw': rot.yaw}
         self.debug_file_dict['sensor_specs']['transform']['location'] = location_dict
         self.debug_file_dict['sensor_specs']['transform']['rotation'] = rotation_dict
 
         transform = Transform(loc, rot)
-        sensor = world.spawn_actor(sensor_bp, transform, attach_to=vehicle)  # spawn the sensor in the world
-        self.sensor = sensor
-        print("sensor appended..", sensor)
+        print('appending camera to the last vehicle...')
+        # self.camera_rgb = world.spawn_actor(camera_rgb_bp, transform, attach_to=vehicle)
+        # print('cam RGB added: ', self.camera_rgb)
+        # self.camera_depth = world.spawn_actor(camera_depth_bp, transform, attach_to=vehicle)
+        # print('cam Depth added: ', self.camera_depth)
+        # self.camera_semseg = world.spawn_actor(camera_semseg_bp, transform, attach_to=vehicle)
+        # print('cam SemSeg added: ', self.camera_semseg)
+        self.sensor = world.spawn_actor(sensor_bp, transform, attach_to=vehicle)  # spawn the sensor in the world
+        # self.sensor = sensor
+        print("sensor appended..", self.sensor)
 
         print("starting listening")  # then start to listen data
         self.sensor.listen(lambda sensor_data: self.on_listen_data(sensor_data, actor_lst_id))
+        # world_snapshot = world.get_snapshot()
+
+        # self.camera_rgb.listen(lambda camera_rgb_data: self.on_listen_data_2(camera_rgb_data, actor_lst_id, world, world_snapshot, self.camera_rgb))
+        # self.camera_semseg.listen(lambda camera_semseg_data: self.on_listen_data_2(camera_semseg_data, actor_lst_id, world, world_snapshot, self.camera_semseg))
+        # self.camera_depth.listen(lambda camera_depth_data: self.on_listen_data_2(camera_depth_data, actor_lst_id, world, world_snapshot, self.camera_depth))
         print("listen......")
 
     def on_debugged(self, world, world_snapshot, actor_lst_id):
@@ -177,8 +211,8 @@ class CustomDataDebugger(object):
                 rotation = transform.rotation
                 box = retrieved_actor.bounding_box
                 print('Actor retrieved: ', retrieved_actor)
-
-                self.draw_3d_box_and_id(location, rotation, box, retrieved_actor)  # then draw the bounding box
+                print("############## trying to drow Box ###############")
+                # self.draw_3d_box_and_id(location, rotation, box, retrieved_actor)  # then draw the bounding box
 
         print("returning snapshot.....")
         return world_snapshot
@@ -212,10 +246,30 @@ class CustomDataDebugger(object):
             color=Color(254, 254, 254)
         )
 
+    def config_camera(self, cam_type):
+        sensor_bp = self.sensor_bp.find(cam_type)  # find the selected sensor in the library
+        # set the sensor attributes
+        sensor_bp.set_attribute('image_size_x', str(self.img_width))
+        sensor_bp.set_attribute('image_size_y', str(self.img_height))
+        sensor_bp.set_attribute('fov', str(self.fov))
+        sensor_bp.set_attribute('sensor_tick', str(self.tick))
+        return sensor_bp
+
     # Method to destroy all living actors in the current world
     def on_stopping_listening(self):
+        print("stopping listening and destroying camera...")
         if self.sensor is not None and self.sensor.is_listening:
-            print("stopping listening...")
             self.sensor.stop()
             self.sensor.destroy()
-            print("Sensor destroyed")
+        #     self.camera_depth.stop()
+        #     self.camera_depth.destroy()
+        #
+        # if self.camera_semseg is not None and self.camera_semseg.is_listening:
+        #     self.camera_semseg.stop()
+        #     self.camera_semseg.destroy()
+        #
+        # if self.camera_rgb is not None and self.camera_rgb.is_listening:
+        #     self.camera_rgb.stop()
+        #     self.camera_rgb.destroy()
+
+        print("Done!")

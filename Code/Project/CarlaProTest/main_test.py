@@ -21,18 +21,19 @@ from model.sensor_test import CustomDataDebugger
 
 # provide enough waiting time to avoid RuntimeError while trying
 # while to wait connection answer from the server
-def on_setting_world(client, desired_map='Town02'):
+def on_setting_world(client, desired_map='Town03'):
     # retrieve the world through the current client
     world = client.get_world()
     current_map = world.get_map()
     weather = WeatherParameters(
-        cloudyness=1.0,
+        cloudyness=2.0,
         precipitation=1.0,
         sun_altitude_angle=80.0)
     # loading the world cause an runtime-exception at the first time
     # that the program ist launched
     if current_map.name != desired_map:
         try:
+
             world = client.load_world(desired_map)
             # get the world settings and check if synchronized_mode is enable
             client.reload_world()
@@ -47,7 +48,6 @@ def on_setting_world(client, desired_map='Town02'):
 
 
 def main():
-
     client = carla.Client('localhost', 2000)  # create a client
     client.set_timeout(10.5)  # set Server-Polling to 10.5 second
     world = on_setting_world(client)
@@ -61,7 +61,7 @@ def main():
         # Spawn vehicles and walkers
         test_vehicle.on_spawn_vehicles(15)
         print("waiting for server answer before adding another actors")
-        test_walker.on_spawn_walkers(20)
+        test_walker.on_spawn_walkers(30)
 
         # retrieve the last spawned vehicle through its position in the vehicle list (class CustomVehicleManager)
         pos = len(test_vehicle.vehicle_lst) - 1
@@ -84,7 +84,6 @@ def main():
             tick_id = world.tick()
             print("tick done!: ", tick_id)  # debug the world in every tick drawing boxes for all actors
             world.on_tick(lambda world_snapshot: test_sensor.on_debugged(world, world_snapshot, actor_id))
-
             print("end of while")
 
     finally:
