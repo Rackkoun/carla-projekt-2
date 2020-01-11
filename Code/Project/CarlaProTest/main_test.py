@@ -21,17 +21,17 @@ from model.sensor_test import CustomDataDebugger
 
 # provide enough waiting time to avoid RuntimeError while trying
 # while to wait connection answer from the server
-def on_setting_world(client, desired_map='Town03'):
+def on_setting_world(client, desired_map='Town02'):
     # retrieve the world through the current client
     world = client.get_world()
     current_map = world.get_map()
     weather = WeatherParameters(
-        cloudyness=2.0,
-        precipitation=1.0,
-        sun_altitude_angle=80.0)
+        cloudyness=1.0,
+        precipitation=0.0,
+        sun_altitude_angle=88.7)
     # loading the world cause an runtime-exception at the first time
     # that the program ist launched
-    if current_map.name != desired_map:
+    if current_map.name is not desired_map:
         try:
 
             world = client.load_world(desired_map)
