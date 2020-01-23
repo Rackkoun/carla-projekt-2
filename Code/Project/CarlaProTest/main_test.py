@@ -23,26 +23,33 @@ from model.sensor_test import CustomDataDebugger
 # while to wait connection answer from the server
 def on_setting_world(client, desired_map='Town02'):
     # retrieve the world through the current client
-    world = client.get_world()
-    current_map = world.get_map()
+    world = client.load_world(desired_map)
+
+    settings = world.get_settings()
     weather = WeatherParameters(
         cloudyness=1.0,
         precipitation=0.0,
         sun_altitude_angle=88.7)
-    # loading the world cause an runtime-exception at the first time
-    # that the program ist launched
-    if current_map.name is not desired_map:
-        try:
+    world.set_weather(weather)
+    world.apply_settings(settings)
 
-            world = client.load_world(desired_map)
-            # get the world settings and check if synchronized_mode is enable
-            client.reload_world()
-            settings = world.get_settings()
-            world.set_weather(weather)
-            world.apply_settings(settings)
-            print("Desired Map's name: ", desired_map)
-        except RuntimeError as error:
-            print("Error while changing the town: ", error)
+    # client.reload_world()
+    print('World setting done!')
+    #
+    # # world = client.get_world()
+    # # current_map = world.get_map()
+    #
+    # # loading the world cause an runtime-exception at the first time
+    # # that the program ist launched
+    # if current_map.name is not desired_map:
+    #     try:
+    #         # get the world settings and check if synchronized_mode is enable
+    #         # client.reload_world()
+    #
+    #
+    #         print("Desired Map's name: ", desired_map)
+    #     except RuntimeError as error:
+    #         print("Error while changing the town: ", error)
 
     return world
 

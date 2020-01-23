@@ -77,9 +77,9 @@ class CustomDataDebugger(object):
 
             if retrieved_actor.is_alive:  # check if the retrieved actor is still alive
                 transform = actor_snapshot.get_transform()  # then get its position in the world
-                location = transform.location
+                # location = transform.location
                 box = retrieved_actor.bounding_box  # and its bounding box to write them later in the json file
-                self.on_update_dict(retrieved_actor, location, box, debug_info_lst)
+                self.on_update_dict(retrieved_actor, transform, box, debug_info_lst)
 
         # retrieve the camera to write its information in the json file too
         sensor_snap = world_snapshot.find(self.sensor.id)
@@ -114,25 +114,24 @@ class CustomDataDebugger(object):
         return sensor_data
 
     # update the information in the section debug-info of the dict
-    def on_update_dict(self, actor, location, actor_box, debug_lst):
+    def on_update_dict(self, actor, actor_transform, actor_box, debug_lst):
         # current location of the actor in the world snapshot
         actor_location_dict = {
-            'x': location.x,
-            'y': location.y,
-            'z': location.z
+            'x': actor_transform.location.x,
+            'y': actor_transform.location.y,
+            'z': actor_transform.location.z
         }
-        # 3D BBOX
-        bbox_3d_dict = {
-            'xpos': actor_box.extent.x,
-            'ypos': actor_box.extent.y,
-            'zpos': actor_box.extent.z
+        # Rotation
+        actor_rotation_dict = {
+            'roll': actor_transform.rotation.roll,
+            'pitch': actor_transform.rotation.pitch,
+            'yaw': actor_transform.rotation.yaw
         }
-        # 2D BBOX
-        bbox_2d_dict = {
-            'xmin': 0.0,
-            'ymin': 0.0,
-            'xmax': actor_box.extent.x,
-            'ymax': actor_box.extent.y
+        # BBOX
+        bbox_ext_dict = {
+            'x': actor_box.extent.x,
+            'y': actor_box.extent.y,
+            'z': actor_box.extent.z
         }
         # actor_box_lst['box_extent'] = ext_box_dict
 
@@ -140,8 +139,8 @@ class CustomDataDebugger(object):
             'actor_type': actor.type_id,
             'actor_id': actor.id,
             'actor_location': actor_location_dict,
-            'actor_bbox_2d': bbox_2d_dict,
-            'actor_bbox_3d': bbox_3d_dict
+            'actor_rotation': actor_rotation_dict,
+            'actor_bbox_ext': bbox_ext_dict
         }
 
         debug_lst.append(actor_dict)
@@ -196,11 +195,11 @@ class CustomDataDebugger(object):
             actor_snapshot = world_snapshot.find(retrieved_actor.id)
 
             if retrieved_actor.is_alive:  # get its position if it is still alive
-                transform = actor_snapshot.get_transform()
-                location = transform.location
-                rotation = transform.rotation
-                box = retrieved_actor.bounding_box
-                print('Actor retrieved: ', retrieved_actor)
+                # transform = actor_snapshot.get_transform()
+                # location = transform.location
+                # rotation = transform.rotation
+                # box = retrieved_actor.bounding_box
+                # print('Actor retrieved: ', retrieved_actor)
                 print("############## trying to drow Box ###############")
                 # self.draw_3d_box_and_id(location, rotation, box, retrieved_actor)  # then draw the bounding box
 
