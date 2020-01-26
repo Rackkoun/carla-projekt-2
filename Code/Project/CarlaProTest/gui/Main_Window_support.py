@@ -14,10 +14,13 @@ except ImportError:
 
 try:
     import ttk
+
     py3 = False
 except ImportError:
     import tkinter.ttk as ttk
+
     py3 = True
+
 
 def set_Tk_var():
     global Checkbutton1_Var
@@ -28,7 +31,8 @@ def set_Tk_var():
     Checkbutton2_Var.set(1)
     global Checkbutton3_Var
     Checkbutton3_Var = tk.IntVar()
-    #Checkbutton3_Var.set(1)
+    # Checkbutton3_Var.set(1)
+
 
 def init(top, gui, *args, **kwargs):
     global w, top_level, root
@@ -36,16 +40,15 @@ def init(top, gui, *args, **kwargs):
     top_level = top
     root = top
 
+
 def destroy_window():
     # Function which closes the window.
     global top_level
     top_level.destroy()
     top_level = None
 
+
 if __name__ == '__main__':
     import Main_Window
+
     Main_Window.vp_start_gui()
-
-
-
-

@@ -24,8 +24,8 @@ except ImportError:
 
     py3 = True
 
-import Main_Window_support
-
+from gui import Main_Window_support
+from model.image_processing import CustomCarlaDataset
 
 def vp_start_gui():
     '''Starting point when module is the main routine.'''
@@ -106,6 +106,16 @@ class Toplevel1:
         photo_location = os.path.join(prog_location, "carla_test_image.jpg")
         global _img0
         top.update()
+        im, jfile, im_name = CustomCarlaDataset.on_getting_data(0)
+        re_im = CustomCarlaDataset.rearrangImgForTK(im)
+        print("type of rearrnged img: ", type(re_im))
+        print("Type SHAPE: ", im.shape)
+        arr2img = Image.fromarray(re_im)
+        print('arr2img type: ', type(arr2img))
+        print(arr2img.size)
+        # img = Image.open(arr2img)
+        arr2img = arr2img.resize((640, 680), Image.ANTIALIAS)
+        print('image converted and opened')
         self.w = int(self.Center_Label.winfo_width())
         self.h = int(self.Center_Label.winfo_height())
         _img0 = Image.open(photo_location)
@@ -115,7 +125,7 @@ class Toplevel1:
         # print(self.Center_Frame.winfo_reqwidth(), self.Center_Frame.winfo_reqheight())
         print(self.w, self.h)
         print(_img0.size)
-        _img0 = ImageTk.PhotoImage(_img0)
+        _img0 = ImageTk.PhotoImage(arr2img)
 
         self.Center_Label.configure(image=_img0, anchor=tk.NW)
         self.Center_Label.image = _img0
