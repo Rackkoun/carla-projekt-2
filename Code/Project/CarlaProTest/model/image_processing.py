@@ -54,14 +54,16 @@ class CustomCarlaDataset(object):
         jsons = list(sorted(j for j in json_path))
         print('IMG and File are loaded!')
         # print(imgs[0])
+        for img in imgs:
+            print(img)
         return imgs, jsons
 
     @staticmethod
     def on_getting_data(idx):
         imgs, jsons = CustomCarlaDataset._load_dataset()
-        print("type imgs: ", type(imgs))
+        # print("type imgs: ", type(imgs))
         img = cv.imread('{}'.format(CustomCarlaDataset.root_dir_img / imgs[idx]))
-        print('type im with CV2: ', type(img))
+        # print('type im with CV2: ', type(img))
         # print(img)
         file_content = (CustomCarlaDataset.root_dir_json / jsons[idx]).read_text()
         json_file = json.loads(file_content, encoding='utf-8')
@@ -246,8 +248,8 @@ class ImageBBoxCoordinate(object):
                 if p[1] >= ymax:
                     ymax = p[1]
             if xmin < 0 or xmin == xmax:
-                print('unable to get values to draw box : ', xmin, xmax, ymin, ymax)
-                print('actor: ', a, ' piouff')
+                print('unable to get values to draw box : ', xmin, xmax, ymin, ymax, ' for actor: ', a)
+                # print('actor: ', a, ' piouff')
             else:
                 print('value got ~(^v^)~')
                 p0 = (xmin, ymin)
@@ -263,9 +265,9 @@ class ImageBBoxCoordinate(object):
                     print('pedestrian added (° °): --> ', a)
                 else:
                     print('too far from the scene: ', xmin, xmax, ymin, ymax)
-        print('++++++++++++++++++++++++ COORD IN POINT 2D ++++++++++++++++++')
-        print(coordinates)
-        print(id_text)
+        # print('++++++++++++++++++++++++ COORD IN POINT 2D ++++++++++++++++++')
+        # print(coordinates)
+        # print(id_text)
         print('++++++++++++++++++++++END ++++++++++++++++++++++++++++++++++')
         return coordinates, id_text
 
@@ -319,8 +321,8 @@ class ImageBBoxCoordinate(object):
             actor_type.append(act_typ)
         # bbx = [ImageBBoxCoordinate.filter_bbox_to_draw(carla_actor, carla_cam, calibration) for carla_actor in
         #        carla_actor_lst]
-        print("BBX (before): ", len(bbx))
-        print("len TYP: ", len(actor_type))
+        # print("BBX (before): ", len(bbx))
+        # print("len TYP: ", len(actor_type))
         # add object filter -- later...
 
         actor_type_ = []
@@ -329,14 +331,14 @@ class ImageBBoxCoordinate(object):
             if all(box[:, 2] > 0):
                 bbx_.append(box)
                 actor_type_.append(typ)
-                print('type appended: ', typ)
+                # print('type appended: ', typ)
 
         bbx = bbx_
         actor_type = actor_type_
 
         bbx = [b for b in bbx if all(b[:, 2] > 0)]  # try to play with different values
-        print("len BBX (after): ", len(bbx))
-        print("len TYP (after): ", len(actor_type))
+        # print("len BBX (after): ", len(bbx))
+        # print("len TYP (after): ", len(actor_type))
         return bbx, actor_type
 
 
@@ -351,18 +353,18 @@ class ObjectDetectionWithOpenCV(object):
     @staticmethod
     def on_drawing_2d_box(carla_img, coordinates, actor_type, box_thickness=1):
         tmp_img = carla_img
-        print('############################################')
-        print('coord received DRAW: ', coordinates)
-        print('############################################')
+        # print('############################################')
+        # print('coord received DRAW: ', coordinates)
+        # print('############################################')
         for c, a in zip(coordinates, actor_type):
             c1 = (c[0], c[1])
             c2 = (c[2], c[3])
             c3 = (c[0], c[1]-10)
-            print(c1)
-            print(c2)
+            # print(c1)
+            # print(c2)
             # print(c[0])
             # print("C[0]: ", type(c[0]))
-            print('type (a): ', type(a), ' a: ', a)
+            # print('type (a): ', type(a), ' a: ', a)
 
             tmp_img = cv.rectangle(tmp_img, c1, c2, (0, 0, 254), box_thickness)
             cv.putText(tmp_img, a, c3, cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), box_thickness)
@@ -386,8 +388,8 @@ class ObjectDetectionWithOpenCV(object):
         print("IMA: ")
 
         imm = ObjectDetectionWithOpenCV.on_drawing_2d_box(im, coordinates, actor_ids)
-        print("type im  imshow: ", type(im))
-        print("type imm  imshow: ", type(imm))
+        # print("type im  imshow: ", type(im))
+        # print("type imm  imshow: ", type(imm))
         cv.imshow("{}".format(im_name), im)
         cv.imwrite(path_im, imm)
         cv.waitKey(0)
@@ -396,7 +398,7 @@ class ObjectDetectionWithOpenCV(object):
     @staticmethod
     def play():
         try:
-            im, jfile, im_name = CustomCarlaDataset.on_getting_data(5)
+            im, jfile, im_name = CustomCarlaDataset.on_getting_data(35)
             debug_info = jfile['debug_info'][0]
             calib = ImageBBoxCoordinate.on_calibrate(jfile['img_width'], jfile['img_height'], jfile['img_fov'])
 

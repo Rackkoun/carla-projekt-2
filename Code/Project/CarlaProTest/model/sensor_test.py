@@ -35,7 +35,7 @@ class CustomDataDebugger(object):
         self.debug = None  # to activate the debugging in the current world
 
         self.json_path = 'res/files/json/'  # path to save generated images and json files
-        self.img_semseg_path = 'res/files/semseg/'
+        # self.img_semseg_path = 'res/files/semseg/'
         self.img_depth_path = 'res/files/depth/'
         self.img_rgb_path = 'res/files/rgb/'
         self.img_width = 640  # image width; suitable to change the Image resolution
@@ -92,12 +92,12 @@ class CustomDataDebugger(object):
         self.debug_file_dict['cam_rotation'] = rotation_dict
 
         # save the generated image in the disk
-        semseg_convertor = ColorConverter.CityScapesPalette
+        # semseg_convertor = ColorConverter.CityScapesPalette
         depth_convertor = ColorConverter.Depth
         # save in folder for original images
         sensor_data.save_to_disk(os.path.join(self.img_rgb_path, '{}'.format(sensor_data.frame)))
         # save in folder for semantic segmented images
-        sensor_data.save_to_disk(os.path.join(self.img_semseg_path, '{}'.format(sensor_data.frame)), semseg_convertor)
+        # sensor_data.save_to_disk(os.path.join(self.img_semseg_path, '{}'.format(sensor_data.frame)), semseg_convertor)
         # save in folder for depth converted images
         sensor_data.save_to_disk(os.path.join(self.img_depth_path, '{}'.format(sensor_data.frame)), depth_convertor)
         print("Img created: ", sensor_data)
@@ -164,8 +164,8 @@ class CustomDataDebugger(object):
         world = self.client.get_world()
         sensor_bp = self.config_camera(sensor_type)  # configure the camera blueprint
 
-        loc = Location(x=-5.5, y=0.0, z=1.8)
-        rot = Rotation(roll=0, pitch=0, yaw=0)
+        loc = Location(x=-5.5, y=-0.3, z=3.0)
+        rot = Rotation(roll=0, pitch=0.0, yaw=0)
         location_dict = {'x': loc.x, 'y': loc.y, 'z': loc.z}
         rotation_dict = {'roll': rot.roll, 'pitch': rot.pitch, 'yaw': rot.yaw}
         self.debug_file_dict['cam_location'] = location_dict
