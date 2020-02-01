@@ -54,8 +54,8 @@ class CustomCarlaDataset(object):
         jsons = list(sorted(j for j in json_path))
         print('IMG and File are loaded!')
         # print(imgs[0])
-        for img in imgs:
-            print(img)
+        # for img in imgs:
+        #    print(img)
         return imgs, jsons
 
     @staticmethod
@@ -72,7 +72,7 @@ class CustomCarlaDataset(object):
         return img, json_file, str(imgs[idx])
 
     @staticmethod
-    def rearrangImgForTK(arr_img):
+    def rearrang_img_for_gui(arr_img):
         """
         OpenCV read Image color in Blue, Green, Red; the color priority must be rearrange
         (split) before display it with oder Image-library as PIL or ImageTK

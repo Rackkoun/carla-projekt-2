@@ -107,7 +107,7 @@ class Toplevel1:
         global _img0
         top.update()
         im, jfile, im_name = CustomCarlaDataset.on_getting_data(0)
-        re_im = CustomCarlaDataset.rearrangImgForTK(im)
+        re_im = CustomCarlaDataset.rearrang_img_for_gui(im)
         print("type of rearrnged img: ", type(re_im))
         print("Type SHAPE: ", im.shape)
         arr2img = Image.fromarray(re_im)
