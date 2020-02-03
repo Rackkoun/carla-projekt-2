@@ -106,7 +106,7 @@ class Toplevel1:
         photo_location = os.path.join(prog_location, "carla_test_image.jpg")
         global _img0
         top.update()
-        im, jfile, im_name = CustomCarlaDataset.on_getting_data(0)
+        im, jfile, im_name = CustomCarlaDataset.on_load_img(0)
         re_im = CustomCarlaDataset.rearrang_img_for_gui(im)
         print("type of rearrnged img: ", type(re_im))
         print("Type SHAPE: ", im.shape)

@@ -39,13 +39,18 @@ RED_BOX_COLOR = (16, 32, 254)
 #####################################################################
 
 class CustomCarlaDataset(object):
-    root_dir_img = None
-    root_dir_json = None
+    root_dir_img = Path('../res/files/rgb/')
+    root_dir_json = Path('../res/files/json/')
+    # root_dir_copy = None
+    IMG_LST = None
+    JSON_LST = None
+
+    def __init__(self):
+        print('path set')
 
     @staticmethod
     def _load_dataset():
-        CustomCarlaDataset.root_dir_img = Path('../res/files/rgb/')
-        CustomCarlaDataset.root_dir_json = Path('../res/files/json/')
+        # CustomCarlaDataset.root_dir_json = Path('../res/files/copy/')
         img_path = os.listdir(CustomCarlaDataset.root_dir_img)
         json_path = os.listdir(CustomCarlaDataset.root_dir_json)
 
@@ -53,23 +58,26 @@ class CustomCarlaDataset(object):
         imgs = list(sorted(f for f in img_path))
         jsons = list(sorted(j for j in json_path))
         print('IMG and File are loaded!')
-        # print(imgs[0])
-        # for img in imgs:
-        #    print(img)
         return imgs, jsons
 
     @staticmethod
-    def on_getting_data(idx):
-        imgs, jsons = CustomCarlaDataset._load_dataset()
-        # print("type imgs: ", type(imgs))
-        img = cv.imread('{}'.format(CustomCarlaDataset.root_dir_img / imgs[idx]))
-        # print('type im with CV2: ', type(img))
-        # print(img)
-        file_content = (CustomCarlaDataset.root_dir_json / jsons[idx]).read_text()
+    def load():
+        CustomCarlaDataset.IMG_LST, CustomCarlaDataset.JSON_LST = CustomCarlaDataset._load_dataset()
+        # print(CustomCarlaDataset.IMG_LST[0])
+        return CustomCarlaDataset.IMG_LST, CustomCarlaDataset.JSON_LST
+
+    @staticmethod
+    def on_load_img(idx):
+        print('load img...')
+        img = cv.imread('{}'.format(CustomCarlaDataset.root_dir_img / CustomCarlaDataset.IMG_LST[idx]))
+        # print(type(img))
+        return img, str(CustomCarlaDataset.IMG_LST[idx])
+
+    @staticmethod
+    def on_load_file(idx):
+        file_content = (CustomCarlaDataset.root_dir_json / CustomCarlaDataset.JSON_LST[idx]).read_text()
         json_file = json.loads(file_content, encoding='utf-8')
-        # print('{}'.format(CustomCarlaDataset.root_dir_img / imgs[idx]))
-        # print(imgs[idx])
-        return img, json_file, str(imgs[idx])
+        return json_file
 
     @staticmethod
     def rearrang_img_for_gui(arr_img):
@@ -77,6 +85,7 @@ class CustomCarlaDataset(object):
         OpenCV read Image color in Blue, Green, Red; the color priority must be rearrange
         (split) before display it with oder Image-library as PIL or ImageTK
         """
+        print('re-arrange image...')
         blue, green, red = cv.split(arr_img)
         rearranged_img = cv.merge((red, green, blue))
         return rearranged_img
@@ -383,6 +392,12 @@ class ObjectDetectionWithOpenCV(object):
         return
 
     @staticmethod
+    def on_saving_copy(img):
+        copy_path = os.path.join('/res/files/copy/', '{}_copy.png'.format(img))
+        cv.imwrite(copy_path, img)
+        print('Image saved!')
+
+    @staticmethod
     def draw_2d_box(coordinates, im, im_name, actor_ids):
         path_im = os.path.join('/home/rack/', '{}_modified.png'.format(im))
         print("IMA: ")
@@ -398,7 +413,9 @@ class ObjectDetectionWithOpenCV(object):
     @staticmethod
     def play():
         try:
-            im, jfile, im_name = CustomCarlaDataset.on_getting_data(35)
+            img_lst, json_lst = CustomCarlaDataset.load()
+            im, im_name = CustomCarlaDataset.on_load_img(0)
+            jfile = CustomCarlaDataset.on_load_file(0)
             debug_info = jfile['debug_info'][0]
             calib = ImageBBoxCoordinate.on_calibrate(jfile['img_width'], jfile['img_height'], jfile['img_fov'])
 
