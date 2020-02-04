@@ -414,8 +414,8 @@ class ObjectDetectionWithOpenCV(object):
     def play():
         try:
             img_lst, json_lst = CustomCarlaDataset.load()
-            im, im_name = CustomCarlaDataset.on_load_img(0)
-            jfile = CustomCarlaDataset.on_load_file(0)
+            im, im_name = CustomCarlaDataset.on_load_img(3)
+            jfile = CustomCarlaDataset.on_load_file(3)
             debug_info = jfile['debug_info'][0]
             calib = ImageBBoxCoordinate.on_calibrate(jfile['img_width'], jfile['img_height'], jfile['img_fov'])
 

@@ -24,8 +24,8 @@ except ImportError:
 
     py3 = True
 
-from gui import Main_Window_support
-from model.image_processing import CustomCarlaDataset
+import Main_Window_support
+from image_processing import CustomCarlaDataset
 
 def vp_start_gui():
     '''Starting point when module is the main routine.'''

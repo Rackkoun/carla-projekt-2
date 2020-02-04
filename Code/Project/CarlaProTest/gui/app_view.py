@@ -1,12 +1,10 @@
 import tkinter as tk
-import time
 
 from tkinter import ttk
 from PIL import Image, ImageTk
-from threading import Thread
-from queue import Queue
 
-from model.image_processing import CustomCarlaDataset
+#from model.image_processing import CustomCarlaDataset
+from image_processing import CustomCarlaDataset
 
 OBJ_ID = 'Object id'
 OBJ_TYP = 'Object typ'
@@ -145,12 +143,15 @@ class MainPanel(object):
         # print(origin_img)
         img_lbl = ImageTk.PhotoImage(image=origin_img)
         self.origin_img_lbl = ttk.Label(self.img_orig_container, image=img_lbl)
+        self.origin_img_lbl.image = img_lbl
+        print("type creation:", type(self.origin_img_lbl))
         self.origin_img_lbl.pack(padx=8, pady=8)
-        self.origin_img_lbl = img_lbl
+
 
         self.copy_img_lbl = ttk.Label(self.img_copy_container, image=img_lbl)
+        self.copy_img_lbl.image = img_lbl
         self.copy_img_lbl.pack(padx=8, pady=8)
-        self.copy_img_lbl = img_lbl
+
         # display picture
         self.on_show_json_content(self.count.get())
         self.m = master
@@ -199,23 +200,21 @@ class MainPanel(object):
     def on_show_img_original(self, count):
         print('on show original')
         array_img, img_name = CustomCarlaDataset.on_load_img(count)
-        # print(type(array_img), ' 1')
-        # print(array_img)
         re_arrange = CustomCarlaDataset.rearrang_img_for_gui(array_img)
         origin_img = Image.fromarray(re_arrange)
         print('CONTAINER: ', self.img_orig_container.winfo_height())
         # resize the image to diplay on the GUI
         origin_img.thumbnail((420, 440), Image.ANTIALIAS)
-        # print(origin_img)
         img_lbl = ImageTk.PhotoImage(image=origin_img)
         print("LABL: ", img_lbl.height())
 
         print('reset CONTAINER HEIGHT: ', self.img_orig_container.size)
-
-        self.origin_img_lbl = ttk.Label(self.img_orig_container, image=img_lbl)
+        self.origin_img_lbl.configure(image=img_lbl, anchor=tk.NW)
+        #self.origin_img_lbl = ttk.Label(self.img_orig_container, image=img_lbl)
+        self.origin_img_lbl.image = img_lbl
         self.origin_img_lbl.pack(padx=8, pady=8)
-        self.origin_img_lbl = img_lbl
-        print('SELF LABL: ', self.origin_img_lbl.height())
+
+        print('SELF LABL: ', self.origin_img_lbl.image.height())
 
     def on_show_img_copy(self, count):
         img_arr, img_name = CustomCarlaDataset.on_load_img(count)
@@ -226,9 +225,10 @@ class MainPanel(object):
         origin_img.thumbnail((420, 440), Image.ANTIALIAS)
         # print(origin_img)
         img_lbl = ImageTk.PhotoImage(image=origin_img)
-        self.copy_img_lbl = ttk.Label(self.img_copy_container, image=img_lbl)
+        self.copy_img_lbl .configure(image=img_lbl, anchor=tk.NW)
+        #self.copy_img_lbl = ttk.Label(self.img_copy_container, image=img_lbl)
+        self.copy_img_lbl.image = img_lbl
         self.copy_img_lbl.pack(padx=8, pady=8)
-        self.copy_img_lbl = img_lbl
 
     def on_show_json_content(self, count):
         print('JSON ', count)
