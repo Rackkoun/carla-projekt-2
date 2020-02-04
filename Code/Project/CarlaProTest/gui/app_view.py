@@ -54,9 +54,11 @@ class MainPanel(object):
         self.lbl_var = tk.StringVar()
 
         self.count = tk.IntVar()
+        print("self.count:",self.count.get())
         self.max_count = tk.IntVar()
-        self.max_count.set(max_length)
-        self.lbl_var.set('{}/{}'.format(self.count.get() + 1, self.max_count.get()))
+        self.max_count.set(max_length-1)
+        print("self.max_count:", self.max_count.get())
+        self.lbl_var.set('{}/{}'.format(self.count.get() + 1, self.max_count.get()+1))
 
         # container for file navigation
         nav_container = ttk.LabelFrame(container_control, text='File navigation')
@@ -70,6 +72,8 @@ class MainPanel(object):
 
         entry = ttk.Entry(nav_container, width=5, textvariable=self.entry_var)
         entry.grid(row=0, column=2, padx=5, pady=5, sticky='E')
+
+        print("entry:",entry.get())
 
         self.prev_btn = ttk.Button(nav_container, text='prev', command=self.on_prev_clicked)
         self.prev_btn.grid(row=1, column=0, padx=2, pady=5, sticky='W')
@@ -157,10 +161,25 @@ class MainPanel(object):
         self.m = master
         print('MASTER: ', self.m.winfo_width(), self.m.winfo_height())
 
+        if self.count.get() - 1 <= 0:
+            print("got the first Image")
+            self.prev_btn.config(state="disabled")
+
+        if self.count.get() + 1 >= self.max_count.get():
+            print("got the last Image")
+            self.next_btn.config(state="disabled")
+
     def on_next_clicked(self):
         if self.count.get() < self.max_count.get():
+            if self.count.get()+1 >= self.max_count.get():
+                print("got the last Image")
+                self.next_btn.config(state="disabled")
             # MainPanel2.COUNT += 1
             self.count.set(self.count.get() + 1)
+
+            if self.count.get() > 0:
+                self.prev_btn.config(state="normal")
+
             # pass the result to a function
             self.on_show_img_original(self.count.get())
             self.on_show_img_copy(self.count.get())
@@ -181,7 +200,16 @@ class MainPanel(object):
 
     def on_prev_clicked(self):
         if self.count.get() > 0:
+
+            if self.count.get() - 1 <= 0:
+                print("got the first Image")
+                self.prev_btn.config(state="disabled")
+
             self.count.set(self.count.get() - 1)
+
+            if self.count.get() < self.max_count.get():
+                self.next_btn.config(state="normal")
+
             self.on_show_img_original(self.count.get())
             self.on_show_img_copy(self.count.get())
             self.on_show_json_content(self.count.get())
@@ -194,8 +222,8 @@ class MainPanel(object):
             self._on_update_text()
 
     def _on_update_text(self):
-        self.lbl_var.set('{}/{}'.format(self.count.get() + 1, self.max_count.get()))
-        print('label updated: {}/{}'.format(self.count.get() + 1, self.max_count.get()))
+        self.lbl_var.set('{}/{}'.format(self.count.get() + 1, self.max_count.get()+1))
+        print('label updated: {}/{}'.format(self.count.get() + 1, self.max_count.get()+1))
 
     def on_show_img_original(self, count):
         print('on show original')
