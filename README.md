@@ -12,3 +12,8 @@ While debugging an object in movement, the box can appear move back to the curre
 Tracking an object with its Id occures without (a big) latency as trying to encapsulapte it in a box
 
 ![Vehicle debug](./img/id_sichtbar.png)
+
+
+App-Interface:
+
+![app](./img/app-interface.PNG)
