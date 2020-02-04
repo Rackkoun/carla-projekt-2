@@ -1,0 +1,48 @@
+# pictures will be save in png-file.
+# to reduce the among of space png-file will be ignore
+.vscode
+bilder/
+PythonAPI/
+/Code/Project/CarlaProTest/res/screenshots/*.png
+/Code/Project/CarlaProTest/res/screenshots/../*.png
+/Code/Project/CarlaProTest/res/files/*.png
+/Code/Project/CarlaProTest/res/file/../*.png
+/Code/Project/CarlaProTest/res/files/*.json
+/Code/Project/CarlaProTest/res/file/../*.json
+/Code/Project/CarlaProTest/gui/Files/../*.png
+/Code/Project/CarlaProTest/gui/Files/../*.json
+.idea/
+*.log
+__pycache__/
+out/
+*.py[cod]
+*$py.class
+
+.Python
+env/
+build/
+develop-eggs/
+dist/
+
+*.egg
+eggs/
+.eggs/
+lib/
+
+.cache
+target/
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+*.iws
+
+# User-specific stuff:
+.idea/workspace.xml
+.idea/modules.xml
+.idea/*.iml
+.idea/modules
