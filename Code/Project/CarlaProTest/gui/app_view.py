@@ -3,8 +3,9 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
 
-#from model.image_processing import CustomCarlaDataset
-from image_processing import CustomCarlaDataset
+from model.image_processing import CustomCarlaDataset, ObjectDetectionWithOpenCV
+
+# from image_processing import CustomCarlaDataset
 
 OBJ_ID = 'Object id'
 OBJ_TYP = 'Object typ'
@@ -37,11 +38,11 @@ class MainPanel(object):
 
         # create panels for control and visualization
         # top container of control panel
-        self.frame_control = ttk.Frame(root_panel)
+        self.frame_control = ttk.Frame(root_panel, padding=(2, 2, 10, 10))
         self.frame_control.pack(side=tk.LEFT, fill=tk.Y, pady=10)
 
         # top container of Visualization panel
-        self.frame_visualization = ttk.Frame(root_panel)
+        self.frame_visualization = ttk.Frame(root_panel, padding=(2, 2, 10, 10))
         self.frame_visualization.pack(side=tk.RIGHT, pady=10, padx=5)
 
         container_control = ttk.LabelFrame(master=self.frame_control, text='control panel', padding=(2, 2, 10, 10))
@@ -49,19 +50,20 @@ class MainPanel(object):
 
         # create tk variable
         self.entry_var = tk.IntVar()
+        self.entry_var.set(1)
         self.show_box_var = tk.IntVar()
         self.rdio_var = tk.IntVar()
         self.lbl_var = tk.StringVar()
 
         self.count = tk.IntVar()
-        print("self.count:",self.count.get())
+        print("self.count:", self.count.get())
         self.max_count = tk.IntVar()
-        self.max_count.set(max_length-1)
+        self.max_count.set(max_length - 1)
         print("self.max_count:", self.max_count.get())
-        self.lbl_var.set('{}/{}'.format(self.count.get() + 1, self.max_count.get()+1))
+        self.lbl_var.set('{}/{}'.format(self.count.get() + 1, self.max_count.get() + 1))
 
         # container for file navigation
-        nav_container = ttk.LabelFrame(container_control, text='File navigation')
+        nav_container = ttk.LabelFrame(container_control, text='File navigation', padding=(2, 2, 4, 4))
         nav_container.pack(side=tk.TOP, pady=10, padx=5)
 
         # adding elements int the navigation container
@@ -70,11 +72,9 @@ class MainPanel(object):
         label11 = ttk.Label(nav_container, text='Image number:')
         label11.grid(row=0, column=1, padx=2, pady=5, sticky='W')
 
-        entry = ttk.Entry(nav_container, width=5, textvariable=self.entry_var)
-        entry.grid(row=0, column=2, padx=5, pady=5, sticky='E')
-
-        print("entry:",entry.get())
-
+        self.entry = ttk.Entry(nav_container, width=5, textvariable=self.entry_var)
+        self.entry.grid(row=0, column=2, padx=5, pady=5, sticky='E')
+        self.entry.bind('<Return>', self.on_enter_pressed)
         self.prev_btn = ttk.Button(nav_container, text='prev', command=self.on_prev_clicked)
         self.prev_btn.grid(row=1, column=0, padx=2, pady=5, sticky='W')
 
@@ -99,11 +99,12 @@ class MainPanel(object):
         self.typ_rdio = tk.Radiobutton(id_container, text=OBJ_TYP, variable=self.rdio_var, value=2)
         self.typ_rdio.grid(row=1, column=0, padx=8, pady=5)
 
-        self.save_btn = ttk.Button(obj_detect_container, text='save')
+        self.save_btn = ttk.Button(obj_detect_container, text='save', command=self.on_save)
         self.save_btn.pack(side=tk.LEFT, anchor='sw', padx=5, pady=10)
 
         # Visualization
-        self.container_visualization = ttk.LabelFrame(master=self.frame_visualization, text='visualization panel')
+        self.container_visualization = ttk.LabelFrame(master=self.frame_visualization, text='visualization panel',
+                                                      padding=(2, 2, 4, 4))
         self.container_visualization.pack()
 
         # load all files and set the max size
@@ -116,15 +117,15 @@ class MainPanel(object):
         # ControlPanel.MAX_COUNT = VisualizationPanel.MAX_COUNT
 
         self.json_file_container = ttk.LabelFrame(master=self.container_visualization, text='JSON-File content',
-                                                  padding=(2, 2, 10, 10))
+                                                  padding=(2, 2, 2, 2))
         self.json_file_container.pack(side=tk.BOTTOM, pady=10, fill=tk.X)
 
         self.img_orig_container = ttk.LabelFrame(master=self.container_visualization, text='Original',
-                                                 padding=(2, 2, 10, 10))
+                                                 padding=(2, 2, 2, 2))
         self.img_orig_container.pack(side=tk.LEFT)
 
         self.img_copy_container = ttk.LabelFrame(master=self.container_visualization, text='Copy',
-                                                 padding=(2, 2, 10, 10))
+                                                 padding=(2, 2, 2, 2))
         self.img_copy_container.pack(side=tk.RIGHT)
 
         # add a scrollbar to text widget
@@ -137,26 +138,15 @@ class MainPanel(object):
 
         scrollbar.config(command=self.json_content.yview)
 
-        # load pictures and put them in the frame
-        array_img, img_name = CustomCarlaDataset.on_load_img(self.count.get())
-        re_arrange = CustomCarlaDataset.rearrang_img_for_gui(array_img)
-        origin_img = Image.fromarray(re_arrange)
-
-        # resize the image to diplay on the GUI
-        origin_img.thumbnail((420, 440), Image.ANTIALIAS)
-        # print(origin_img)
-        img_lbl = ImageTk.PhotoImage(image=origin_img)
-        self.origin_img_lbl = ttk.Label(self.img_orig_container, image=img_lbl)
-        self.origin_img_lbl.image = img_lbl
-        print("type creation:", type(self.origin_img_lbl))
+        self.origin_img_lbl = ttk.Label(self.img_orig_container, image=None)
         self.origin_img_lbl.pack(padx=8, pady=8)
 
-
-        self.copy_img_lbl = ttk.Label(self.img_copy_container, image=img_lbl)
-        self.copy_img_lbl.image = img_lbl
+        self.copy_img_lbl = ttk.Label(self.img_copy_container, image=None)
         self.copy_img_lbl.pack(padx=8, pady=8)
 
         # display picture
+        self.on_show_img_original(self.count.get())
+        self.on_show_img_copy(self.count.get())
         self.on_show_json_content(self.count.get())
         self.m = master
         print('MASTER: ', self.m.winfo_width(), self.m.winfo_height())
@@ -171,7 +161,7 @@ class MainPanel(object):
 
     def on_next_clicked(self):
         if self.count.get() < self.max_count.get():
-            if self.count.get()+1 >= self.max_count.get():
+            if self.count.get() + 1 >= self.max_count.get():
                 print("got the last Image")
                 self.next_btn.config(state="disabled")
             # MainPanel2.COUNT += 1
@@ -222,39 +212,64 @@ class MainPanel(object):
             self._on_update_text()
 
     def _on_update_text(self):
-        self.lbl_var.set('{}/{}'.format(self.count.get() + 1, self.max_count.get()+1))
-        print('label updated: {}/{}'.format(self.count.get() + 1, self.max_count.get()+1))
+        self.lbl_var.set('{}/{}'.format(self.count.get() + 1, self.max_count.get() + 1))
+        print('label updated: {}/{}'.format(self.count.get() + 1, self.max_count.get() + 1))
+
+    def on_enter_pressed(self, event):
+        """
+        Method to get value in the entry field and display the data at the given position
+
+        :param event:
+        :return:
+        """
+        self.entry.setvar(self.entry.get())
+        print('VAR: ', int(self.entry.get()))
+        self.count.set(int(self.entry.get()))
+        self.on_show_img_original(self.count.get())
+        self.on_show_img_copy(self.count.get())
+        self.on_show_json_content(self.count.get())
+        self._on_update_text()
+
+    def on_save(self):
+        print('SAVE PRESSED')
+        count = self.count.get()
+        img_arr, img_name = CustomCarlaDataset.on_load_img(count)
+        img_info = CustomCarlaDataset.on_load_file(count)
+
+        box_img_arr = ObjectDetectionWithOpenCV.on_draw(img_arr, img_info)
+        ObjectDetectionWithOpenCV.on_saving_copy(box_img_arr, img_name)
 
     def on_show_img_original(self, count):
         print('on show original')
         array_img, img_name = CustomCarlaDataset.on_load_img(count)
         re_arrange = CustomCarlaDataset.rearrang_img_for_gui(array_img)
         origin_img = Image.fromarray(re_arrange)
-        print('CONTAINER: ', self.img_orig_container.winfo_height())
         # resize the image to diplay on the GUI
         origin_img.thumbnail((420, 440), Image.ANTIALIAS)
         img_lbl = ImageTk.PhotoImage(image=origin_img)
         print("LABL: ", img_lbl.height())
-
-        print('reset CONTAINER HEIGHT: ', self.img_orig_container.size)
+        print('ENTRY: ', self.entry_var.get())
         self.origin_img_lbl.configure(image=img_lbl, anchor=tk.NW)
-        #self.origin_img_lbl = ttk.Label(self.img_orig_container, image=img_lbl)
+        # self.origin_img_lbl = ttk.Label(self.img_orig_container, image=img_lbl)
         self.origin_img_lbl.image = img_lbl
         self.origin_img_lbl.pack(padx=8, pady=8)
 
-        print('SELF LABL: ', self.origin_img_lbl.image.height())
-
     def on_show_img_copy(self, count):
         img_arr, img_name = CustomCarlaDataset.on_load_img(count)
+        img_info = CustomCarlaDataset.on_load_file(count)
+
+        box_img_arr = ObjectDetectionWithOpenCV.on_draw(img_arr, img_info)
+        box_re_arranged = CustomCarlaDataset.rearrang_img_for_gui(box_img_arr)
         re_arrange = CustomCarlaDataset.rearrang_img_for_gui(img_arr)
         origin_img = Image.fromarray(re_arrange)
+        box_copy_img = Image.fromarray(box_re_arranged)
 
         # resize the image to diplay on the GUI
         origin_img.thumbnail((420, 440), Image.ANTIALIAS)
-        # print(origin_img)
-        img_lbl = ImageTk.PhotoImage(image=origin_img)
-        self.copy_img_lbl .configure(image=img_lbl, anchor=tk.NW)
-        #self.copy_img_lbl = ttk.Label(self.img_copy_container, image=img_lbl)
+        box_copy_img.thumbnail((420, 440), Image.ANTIALIAS)
+        img_lbl = ImageTk.PhotoImage(image=box_copy_img)
+        self.copy_img_lbl.configure(image=img_lbl, anchor=tk.NW)
+        # self.copy_img_lbl = ttk.Label(self.img_copy_container, image=img_lbl)
         self.copy_img_lbl.image = img_lbl
         self.copy_img_lbl.pack(padx=8, pady=8)
 
