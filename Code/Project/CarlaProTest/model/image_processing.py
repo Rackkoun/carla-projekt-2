@@ -266,22 +266,33 @@ class ImageBBoxCoordinate(object):
                 p0 = (xmin, ymin)
                 p2 = (xmax, ymax)
 
-                if ((xmax - xmin) >= 10) and ((ymax - ymin) >= 20):
+                if ((xmax - xmin) >= 15) and ((ymax - ymin) >= 20):
                     coordinates.append(p0 + p2)
-                    typ_text.append(a_typ)
+                    splited_vehicle_lbl = a_typ.split('.')
+                    for lbl in splited_vehicle_lbl:
+                        if lbl == 'vehicle':
+                            typ_text.append(lbl)
+                            print(lbl)
                     id_text.append(a_id)
-                    print('Vehicle added [- -]: --> TYP: ', a_typ, ' ID: ', a_id)
-                elif ((xmax - xmin) >= 10) and ((ymax - ymin) >= 10):
+                    print('Vehicle added [- -]: -->  ',  ' ID: ', a_id)
+                elif ((xmax - xmin) >= 15) and ((ymax - ymin) >= 15):
                     coordinates.append(p0 + p2)
-                    typ_text.append(a_typ)
+                    splited_pedestrian_lbl = a_typ.split('.')
+                    for lbl in splited_pedestrian_lbl:
+                        if lbl == 'pedestrian':
+                            print(lbl)
+                            typ_text.append(lbl)
                     id_text.append(a_id)
-                    print('pedestrian added (° °): --> TYP: ', a_typ, ' ID: ', a_id)
+                    print('pedestrian added (° °): -->  ID: ', a_id)
                 else:
                     print('too far from the scene: ', xmin, xmax, ymin, ymax)
         # print('++++++++++++++++++++++++ COORD IN POINT 2D ++++++++++++++++++')
-        # print(coordinates)
+        # print(len(coordinates))
+        # print(len(id_text))
+        # print(typ_text)
         # print(id_text)
-        print('++++++++++++++++++++++END ++++++++++++++++++++++++++++++++++')
+        # print(typ_brut)
+        # print('++++++++++++++++++++++END ++++++++++++++++++++++++++++++++++')
         return coordinates, typ_text, id_text
 
     @staticmethod
@@ -383,7 +394,7 @@ class ObjectDetectionWithOpenCV(object):
             c3 = (c[0], c[1]-10)
             # print(c1)
             # print(c2)
-            # print(c[0])
+            # print(actor_id, ' ', actor_type)
             # print("C[0]: ", type(c[0]))
             # print('type (a): ', type(a), ' a: ', a)
 
@@ -405,7 +416,7 @@ class ObjectDetectionWithOpenCV(object):
 
     @staticmethod
     def on_saving_copy(img, img_name):
-        path = Path('../res/files/copy')
+        path = Path('../res/files/copy/images')
         img_n = path / 'copy-{}'.format(img_name)
         print(img_n)
         cv.imwrite(str(img_n), img)
@@ -416,7 +427,7 @@ class ObjectDetectionWithOpenCV(object):
         path_im = os.path.join('/home/rack/', '{}_modified.png'.format(im))
         print("IMA: ")
 
-        imm = ObjectDetectionWithOpenCV.on_drawing_2d_box(im, coordinates, actor_typs, actor_ids)
+        img_with_box = ObjectDetectionWithOpenCV.on_drawing_2d_box(im, coordinates, actor_typs, actor_ids)
         # print("type im  imshow: ", type(im))
         # print("type imm  imshow: ", type(imm))
         # cv.imshow("{}".format(im_name), im)
@@ -424,7 +435,7 @@ class ObjectDetectionWithOpenCV(object):
         # cv.waitKey(0)
         # ObjectDetectionWithOpenCV.on_saving_copy(imm, im_name)
         # cv.destroyWindow("{}".format(im_name))
-        return imm
+        return img_with_box
 
     @staticmethod
     def on_draw(image, json_file):
@@ -432,9 +443,15 @@ class ObjectDetectionWithOpenCV(object):
         calibrate = ImageBBoxCoordinate.on_calibrate(json_file['img_width'], json_file['img_height'], json_file['img_fov'])
         coord, obj_typ, obj_id = ImageBBoxCoordinate.on_getting_bbox(json_file['debug_info'], json_file, calibrate)
         box_coor, label_typ, label_id = ImageBBoxCoordinate.extract_2d_coordinate(coord, obj_typ, obj_id)
-        box_img = ObjectDetectionWithOpenCV.draw_2d_box(box_coor, image, label_typ, label_id)
-        print('type: ', type(box_img))
-        return box_img
+        img_with_box = ObjectDetectionWithOpenCV.draw_2d_box(box_coor, image, label_typ, label_id)
+        # print('type: ', type(box_img))
+        print(len(label_typ), len(label_id), len(box_coor))
+        print(box_coor)
+        for b in box_coor:
+            print(b)
+            for bb in b:
+                print(bb)
+        return img_with_box, label_id, label_typ, box_coor
 
     @staticmethod
     def play():

@@ -17,7 +17,7 @@ class MainApp(object):
         print("Main class")
         self.main_window = tk.Tk()
         self.main_window.title("Project 2: WiSo19/20")
-        self.main_window.geometry('1267x914')
+        # self.main_window.geometry('1267x914')
 
         im_lst, json_lst = CustomCarlaDataset.load()
         self.main_panel = MainPanel(self.main_window, len(im_lst))
@@ -38,15 +38,15 @@ class MainPanel(object):
 
         # create panels for control and visualization
         # top container of control panel
-        self.frame_control = ttk.Frame(root_panel, padding=(2, 2, 10, 10))
+        self.frame_control = ttk.Frame(root_panel, padding=(4, 4, 4, 4))
         self.frame_control.pack(side=tk.LEFT, fill=tk.Y, pady=10)
 
         # top container of Visualization panel
-        self.frame_visualization = ttk.Frame(root_panel, padding=(2, 2, 10, 10))
-        self.frame_visualization.pack(side=tk.RIGHT, pady=10, padx=5)
+        self.frame_visualization = ttk.Frame(root_panel, padding=(3, 3, 3, 3))
+        self.frame_visualization.pack(side=tk.RIGHT, pady=4, padx=5)
 
-        container_control = ttk.LabelFrame(master=self.frame_control, text='control panel', padding=(2, 2, 10, 10))
-        container_control.pack(padx=10, pady=5)
+        container_control = ttk.LabelFrame(master=self.frame_control, text='control panel', padding=(3, 3, 3, 3))
+        container_control.pack(padx=4, pady=5)
 
         # create tk variable
         self.entry_var = tk.IntVar()
@@ -63,13 +63,13 @@ class MainPanel(object):
         self.lbl_var.set('{}/{}'.format(self.count.get() + 1, self.max_count.get() + 1))
 
         # container for file navigation
-        nav_container = ttk.LabelFrame(container_control, text='File navigation', padding=(2, 2, 4, 4))
-        nav_container.pack(side=tk.TOP, pady=10, padx=5)
+        nav_container = ttk.LabelFrame(container_control, text='File navigation', padding=(3, 2, 2, 3))
+        nav_container.pack(side=tk.TOP, pady=4, padx=5, fill=tk.X)
 
         # adding elements int the navigation container
-        label1 = ttk.Label(nav_container, text='Show')
-        label1.grid(row=0, column=0, padx=8, pady=5, sticky='E')
-        label11 = ttk.Label(nav_container, text='Image number:')
+        label1 = ttk.Label(nav_container, text='go to')
+        label1.grid(row=0, column=0, padx=2, pady=5, sticky='E')
+        label11 = ttk.Label(nav_container, text='image number:')
         label11.grid(row=0, column=1, padx=2, pady=5, sticky='W')
 
         self.entry = ttk.Entry(nav_container, width=5, textvariable=self.entry_var)
@@ -79,32 +79,34 @@ class MainPanel(object):
         self.prev_btn.grid(row=1, column=0, padx=2, pady=5, sticky='W')
 
         self.dynamic_label = ttk.Label(nav_container, textvariable=self.lbl_var)
-        self.dynamic_label.grid(row=1, column=1, padx=2, pady=5)
+        self.dynamic_label.grid(row=1, column=1, pady=5)
 
         self.next_btn = ttk.Button(nav_container, text='next', command=self.on_next_clicked)
         self.next_btn.grid(row=1, column=2, padx=1, pady=5, sticky='E')
 
+        action_container = ttk.LabelFrame(container_control, text='Save File(s)', padding=(3, 3, 3, 3))
+        action_container.pack(side=tk.BOTTOM, fill=tk.X, expand=tk.YES, padx=5, pady=10)
+
+        # self.typ_rdio = tk.Radiobutton(action_container, text=OBJ_TYP, variable=self.rdio_var, value=2)
+        # self.typ_rdio.grid(row=1, column=0, padx=8, pady=5)
+
+        self.save_current_btn = ttk.Button(action_container, text='save current img', command=self.on_save)
+        self.save_current_btn.pack(side=tk.LEFT, padx=5, pady=10)
+
+        self.save_all_btn = ttk.Button(action_container, text='save all img', command=self.on_save_all)
+        self.save_all_btn.pack(side=tk.RIGHT, padx=5, pady=10)
+
         # container for drawing 2D bbox and id for objects
-        obj_detect_container = ttk.LabelFrame(container_control, text='Object detection', padding=(2, 2, 10, 10))
-        obj_detect_container.pack(side=tk.BOTTOM, fill=tk.X, padx=5, pady=10)
+        self.detected_obj_container = ttk.LabelFrame(container_control, text='Detected object info', padding=(3, 3, 3, 3))
+        self.detected_obj_container.pack(side=tk.BOTTOM, fill=tk.X, padx=5, pady=10)
 
-        self.show_box = tk.Checkbutton(obj_detect_container, text='Show 2D box', variable=self.show_box_var)
-        self.show_box.pack(side=tk.TOP, anchor=tk.W, pady=5)
-
-        id_container = ttk.LabelFrame(obj_detect_container, text='Show object label', padding=(2, 2, 10, 10))
-        id_container.pack(side=tk.RIGHT, fill=tk.X, expand=tk.YES, padx=5, pady=10)
-
-        self.id_rdio = tk.Radiobutton(id_container, text=OBJ_ID, variable=self.rdio_var, value=1)
-        self.id_rdio.grid(row=0, column=0, padx=8, pady=5)
-        self.typ_rdio = tk.Radiobutton(id_container, text=OBJ_TYP, variable=self.rdio_var, value=2)
-        self.typ_rdio.grid(row=1, column=0, padx=8, pady=5)
-
-        self.save_btn = ttk.Button(obj_detect_container, text='save', command=self.on_save)
-        self.save_btn.pack(side=tk.LEFT, anchor='sw', padx=5, pady=10)
-
+        # self.show_box = tk.Checkbutton(obj_detect_container, text='Show 2D box', variable=self.show_box_var)
+        # self.show_box.pack(side=tk.TOP, anchor=tk.W, pady=5)
+        self.info_entry = tk.Text(self.detected_obj_container, wrap=tk.WORD, height=8, width=50)
+        self.info_entry.pack(padx=8, pady=5)
         # Visualization
         self.container_visualization = ttk.LabelFrame(master=self.frame_visualization, text='visualization panel',
-                                                      padding=(2, 2, 4, 4))
+                                                      padding=(3, 3, 3, 3))
         self.container_visualization.pack()
 
         # load all files and set the max size
@@ -148,8 +150,7 @@ class MainPanel(object):
         self.on_show_img_original(self.count.get())
         self.on_show_img_copy(self.count.get())
         self.on_show_json_content(self.count.get())
-        self.m = master
-        print('MASTER: ', self.m.winfo_width(), self.m.winfo_height())
+        # self.on_show_detected_obj()
 
         if self.count.get() - 1 <= 0:
             print("got the first Image")
@@ -175,11 +176,6 @@ class MainPanel(object):
             self.on_show_img_copy(self.count.get())
             self.on_show_json_content(self.count.get())
             self._on_update_text()
-            print('########## GEOMETRIE in BTN NEXT')
-            print('ORG: ', self.img_orig_container.winfo_width(), ', ', self.img_orig_container.winfo_height())
-            print('CPY: ', self.img_copy_container.winfo_width(), ', ', self.img_copy_container.winfo_height())
-            print(self.img_orig_container.winfo_geometry())
-            print('MASTER: in METH: ', self.m.winfo_width(), self.m.winfo_height())
         else:
             self.count.set(self.max_count.get())
             # self.count_var.set(count)
@@ -236,8 +232,38 @@ class MainPanel(object):
         img_arr, img_name = CustomCarlaDataset.on_load_img(count)
         img_info = CustomCarlaDataset.on_load_file(count)
 
-        box_img_arr = ObjectDetectionWithOpenCV.on_draw(img_arr, img_info)
+        box_img_arr, lbl_id, lbl_typ, box_coord = ObjectDetectionWithOpenCV.on_draw(img_arr, img_info)
         ObjectDetectionWithOpenCV.on_saving_copy(box_img_arr, img_name)
+
+    def on_save_all(self):
+        print('Saving...')
+        count = 0
+        max_count = self.max_count.get()
+        while count < max_count:
+            img_arr, img_name = CustomCarlaDataset.on_load_img(count)
+            img_info = CustomCarlaDataset.on_load_file(count)
+
+            box_img_arr, lbl_id, lbl_typ, box_coord = ObjectDetectionWithOpenCV.on_draw(img_arr, img_info)
+            ObjectDetectionWithOpenCV.on_saving_copy(box_img_arr, img_name)
+
+            count += 1
+
+        print('Finish')
+
+    def on_show_detected_obj(self, id_lst, class_lst, coor_lst):
+        self.info_entry.delete(1.0, tk.END)
+        self.info_entry.insert(tk.INSERT, 'Id \tClass \tP0 \tP1 \tP2 \tP3\n')
+        for _id, _class, _coord in zip(id_lst, class_lst, coor_lst):
+            _p0 = _coord[0]
+            _p1 = _coord[1]
+            _p2 = _coord[2]
+            _p3 = _coord[3]
+            print('ID: ', _id, ' class: ', _class, _p0, _p1, _p2, _p3)
+            self.info_entry.insert(tk.INSERT, str(_id)+' \t'+str(_class)+'\t'+str(_p0)+'\t'+str(_p1)+'\t'+str(_p2)+'\t'+str(_p3)+'\n')
+        #
+        # print('get TEXT')
+        # text = self.info_entry.get(1.0, tk.END)
+        # print(text)
 
     def on_show_img_original(self, count):
         print('on show original')
@@ -258,11 +284,13 @@ class MainPanel(object):
         img_arr, img_name = CustomCarlaDataset.on_load_img(count)
         img_info = CustomCarlaDataset.on_load_file(count)
 
-        box_img_arr = ObjectDetectionWithOpenCV.on_draw(img_arr, img_info)
+        box_img_arr, lbl_id, lbl_typ, box_coord = ObjectDetectionWithOpenCV.on_draw(img_arr, img_info)
         box_re_arranged = CustomCarlaDataset.rearrang_img_for_gui(box_img_arr)
         re_arrange = CustomCarlaDataset.rearrang_img_for_gui(img_arr)
         origin_img = Image.fromarray(re_arrange)
         box_copy_img = Image.fromarray(box_re_arranged)
+
+        self.on_show_detected_obj(lbl_id, lbl_typ, box_coord)
 
         # resize the image to diplay on the GUI
         origin_img.thumbnail((420, 440), Image.ANTIALIAS)
