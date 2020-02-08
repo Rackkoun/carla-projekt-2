@@ -32,24 +32,7 @@ def on_setting_world(client, desired_map='Town02'):
         sun_altitude_angle=88.7)
     world.set_weather(weather)
     world.apply_settings(settings)
-
-    # client.reload_world()
     print('World setting done!')
-    #
-    # # world = client.get_world()
-    # # current_map = world.get_map()
-    #
-    # # loading the world cause an runtime-exception at the first time
-    # # that the program ist launched
-    # if current_map.name is not desired_map:
-    #     try:
-    #         # get the world settings and check if synchronized_mode is enable
-    #         # client.reload_world()
-    #
-    #
-    #         print("Desired Map's name: ", desired_map)
-    #     except RuntimeError as error:
-    #         print("Error while changing the town: ", error)
 
     return world
 

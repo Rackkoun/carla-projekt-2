@@ -35,7 +35,6 @@ class CustomDataDebugger(object):
         self.debug = None  # to activate the debugging in the current world
 
         self.json_path = 'res/files/json/'  # path to save generated images and json files
-        # self.img_semseg_path = 'res/files/semseg/'
         self.img_depth_path = 'res/files/depth/'
         self.img_rgb_path = 'res/files/rgb/'
         self.img_width = 640  # image width; suitable to change the Image resolution
@@ -77,7 +76,6 @@ class CustomDataDebugger(object):
 
             if retrieved_actor.is_alive:  # check if the retrieved actor is still alive
                 transform = actor_snapshot.get_transform()  # then get its position in the world
-                # location = transform.location
                 box = retrieved_actor.bounding_box  # and its bounding box to write them later in the json file
                 self.on_update_dict(retrieved_actor, transform, box, debug_info_lst)
 
@@ -92,12 +90,9 @@ class CustomDataDebugger(object):
         self.debug_file_dict['cam_rotation'] = rotation_dict
 
         # save the generated image in the disk
-        # semseg_convertor = ColorConverter.CityScapesPalette
         depth_convertor = ColorConverter.Depth
         # save in folder for original images
         sensor_data.save_to_disk(os.path.join(self.img_rgb_path, '{}'.format(sensor_data.frame)))
-        # save in folder for semantic segmented images
-        # sensor_data.save_to_disk(os.path.join(self.img_semseg_path, '{}'.format(sensor_data.frame)), semseg_convertor)
         # save in folder for depth converted images
         sensor_data.save_to_disk(os.path.join(self.img_depth_path, '{}'.format(sensor_data.frame)), depth_convertor)
         print("Img created: ", sensor_data)
@@ -110,7 +105,6 @@ class CustomDataDebugger(object):
 
         # and then convert the dictionary in json-format and save it in the disk too
         self.write_info_in_json_file(self.debug_file_dict, sensor_data.frame)
-        print("img saved! (^ ^)")
         return sensor_data
 
     # update the information in the section debug-info of the dict
@@ -133,7 +127,6 @@ class CustomDataDebugger(object):
             'y': actor_box.extent.y,
             'z': actor_box.extent.z
         }
-        # actor_box_lst['box_extent'] = ext_box_dict
 
         actor_dict = {
             'actor_type': actor.type_id,
@@ -150,7 +143,6 @@ class CustomDataDebugger(object):
         file_name = os.path.join(self.json_path, '{}.json'.format(frame_id))
         with open(file_name, 'w', encoding='utf-8') as f:
             f.write(json.dumps(debug_dict, indent=3, ensure_ascii=False))
-        print('File wrote (+ +)')
 
     def on_attach_senor_to_vehicle(self, vehicle, actor_lst_id, sensor_type='sensor.camera.rgb'):
         """
@@ -174,11 +166,9 @@ class CustomDataDebugger(object):
         transform = Transform(loc, rot)
         print('appending camera to the last vehicle...')
         self.sensor = world.spawn_actor(sensor_bp, transform, attach_to=vehicle)  # spawn the sensor in the world
-        print("sensor appended..", self.sensor)
 
-        print("starting listening")  # then start to listen data
+        # then start to listen data
         self.sensor.listen(lambda sensor_data: self.on_listen_data(sensor_data, actor_lst_id))
-        print("listen......")
 
     def on_debugged(self, world, world_snapshot, actor_lst_id):
         """
@@ -200,10 +190,9 @@ class CustomDataDebugger(object):
                 # rotation = transform.rotation
                 # box = retrieved_actor.bounding_box
                 # print('Actor retrieved: ', retrieved_actor)
-                print("############## trying to drow Box ###############")
                 # self.draw_3d_box_and_id(location, rotation, box, retrieved_actor)  # then draw the bounding box
+                pass
 
-        print("returning snapshot.....")
         return world_snapshot
 
     # Method for drawing bounding box

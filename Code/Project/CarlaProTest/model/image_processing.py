@@ -41,36 +41,30 @@ RED_BOX_COLOR = (16, 32, 254)
 class CustomCarlaDataset(object):
     root_dir_img = Path('../res/files/rgb/')
     root_dir_json = Path('../res/files/json/')
-    # root_dir_copy = None
     IMG_LST = None
     JSON_LST = None
 
     def __init__(self):
-        print('path set')
+        print('CustomDataSet class')
 
     @staticmethod
     def _load_dataset():
-        # CustomCarlaDataset.root_dir_json = Path('../res/files/copy/')
         img_path = os.listdir(CustomCarlaDataset.root_dir_img)
         json_path = os.listdir(CustomCarlaDataset.root_dir_json)
 
         # Load all images and json files, sort them ensuring that they are aligned
         imgs = list(sorted(f for f in img_path))
         jsons = list(sorted(j for j in json_path))
-        print('IMG and File are loaded!')
         return imgs, jsons
 
     @staticmethod
     def load():
         CustomCarlaDataset.IMG_LST, CustomCarlaDataset.JSON_LST = CustomCarlaDataset._load_dataset()
-        # print(CustomCarlaDataset.IMG_LST[0])
         return CustomCarlaDataset.IMG_LST, CustomCarlaDataset.JSON_LST
 
     @staticmethod
     def on_load_img(idx):
-        print('load img...')
         img = cv.imread('{}'.format(CustomCarlaDataset.root_dir_img / CustomCarlaDataset.IMG_LST[idx]))
-        # print(type(img))
         return img, str(CustomCarlaDataset.IMG_LST[idx])
 
     @staticmethod
@@ -96,7 +90,8 @@ class CustomCarlaDataset(object):
         file_name = path / 'copy-{}.json'.format(name)
         with open(file_name, 'w', encoding='utf-8') as f:
             f.write(json.dumps(data_dict, indent=3, ensure_ascii=False))
-        print('File wrote (+ +)')
+
+
 #######################################################################
 #               Custom class for bounding box                         #
 #######################################################################
@@ -230,7 +225,6 @@ class ImageBBoxCoordinate(object):
         calibration[0, 2] = img_width / 2.0
         calibration[1, 1] = calibration[0, 0]
         calibration[1, 2] = img_height / 2.0
-        print("Calibration angle: ", calibration[0, 0])
         return calibration
 
     @staticmethod
@@ -238,19 +232,13 @@ class ImageBBoxCoordinate(object):
         coordinates = []
         typ_text = []
         id_text = []
-        print('method pygame 2D ')
-        inc = 0
-        print('starting increment bbx iteration: ', inc)
         for b, a_typ, a_id in zip(bbox, actor_type, actor_id):
-            inc += 1
-            print("--------------- {} ------------".format(inc))
             point2d = [(int(b[i, 0]), int(b[i, 1])) for i in range(8)]
             xmin = point2d[0][0]
             ymin = point2d[0][1]
             xmax = point2d[0][0]
             ymax = point2d[0][1]
 
-            # print('Len point2d: ', len(point2d))
             for p in point2d:
                 if xmin >= 0:
                     if 0 <= p[0] <= xmin:
@@ -265,10 +253,9 @@ class ImageBBoxCoordinate(object):
                 if p[1] >= ymax:
                     ymax = p[1]
             if xmin < 0 or xmin == xmax:
-                print('unable to get values to draw box : ', xmin, xmax, ymin, ymax, ' for actor: ', a_typ, 'with ID: ', a_id)
-                # print('actor: ', a, ' piouff')
+                print('actor: ', a_typ, 'with ID: ', a_id, ' too far from scene')
             else:
-                print('value got ~(^v^)~')
+                print('actor: ', a_typ, 'with ID: ', a_id, 'value got ~(^v^)~')
                 p0 = (xmin, ymin)
                 p2 = (xmax, ymax)
 
@@ -278,9 +265,7 @@ class ImageBBoxCoordinate(object):
                     for lbl in splited_vehicle_lbl:
                         if lbl == 'vehicle':
                             typ_text.append(lbl)
-                            print(lbl)
                     id_text.append(a_id)
-                    print('Vehicle added [- -]: -->  ',  ' ID: ', a_id)
                 elif ((xmax - xmin) >= 15) and ((ymax - ymin) >= 15):
                     coordinates.append(p0 + p2)
                     splited_pedestrian_lbl = a_typ.split('.')
@@ -289,16 +274,8 @@ class ImageBBoxCoordinate(object):
                             print(lbl)
                             typ_text.append(lbl)
                     id_text.append(a_id)
-                    print('pedestrian added (° °): -->  ID: ', a_id)
                 else:
-                    print('too far from the scene: ', xmin, xmax, ymin, ymax)
-        # print('++++++++++++++++++++++++ COORD IN POINT 2D ++++++++++++++++++')
-        # print(len(coordinates))
-        # print(len(id_text))
-        # print(typ_text)
-        # print(id_text)
-        # print(typ_brut)
-        # print('++++++++++++++++++++++END ++++++++++++++++++++++++++++++++++')
+                    print('too far from the scene: ')
         return coordinates, typ_text, id_text
 
     @staticmethod
@@ -306,9 +283,8 @@ class ImageBBoxCoordinate(object):
         coordinate_ndarray = np.zeros((8, 4))
         actor_type = debug_info_dict['actor_type']
         actor_id = debug_info_dict['actor_id']
-        # print('bb ext for actor:')
-        # print(debug_info_dict['actor_type'])
         bbox_extent = debug_info_dict['actor_bbox_ext']
+
         coordinate_ndarray[0, :] = np.array([bbox_extent['x'], bbox_extent['y'], -bbox_extent['z'], 1])
         coordinate_ndarray[1, :] = np.array([-bbox_extent['x'], bbox_extent['y'], -bbox_extent['z'], 1])
         coordinate_ndarray[2, :] = np.array([-bbox_extent['x'], -bbox_extent['y'], -bbox_extent['z'], 1])
@@ -352,11 +328,6 @@ class ImageBBoxCoordinate(object):
             bbx.append(bb)
             actor_type.append(act_typ)
             actor_id.append(act_id)
-        # bbx = [ImageBBoxCoordinate.filter_bbox_to_draw(carla_actor, carla_cam, calibration) for carla_actor in
-        #        carla_actor_lst]
-        # print("BBX (before): ", len(bbx))
-        # print("len TYP: ", len(actor_type))
-        # add object filter -- later...
 
         actor_type_ = []
         actor_id_ = []
@@ -366,23 +337,21 @@ class ImageBBoxCoordinate(object):
                 bbx_.append(box)
                 actor_type_.append(typ)
                 actor_id_.append(_id)
-                # print('type appended: ', typ)
 
         bbx = bbx_
         actor_type = actor_type_
         actor_id = actor_id_
 
         bbx = [b for b in bbx if all(b[:, 2] > 0)]  # try to play with different values
-        # print("len BBX (after): ", len(bbx))
-        # print("len TYP (after): ", len(actor_type))
+
         return bbx, actor_type, actor_id
 
 
 ######################################################################
 #                         Draw box with OpenCV                       #
 ######################################################################
+
 class ObjectDetectionWithOpenCV(object):
-    path_img_copy = Path('../res/files/copy/')
 
     def __init__(self):
         print('Object detection with OpenCV : ', cv.__version__)
@@ -391,18 +360,10 @@ class ObjectDetectionWithOpenCV(object):
     @staticmethod
     def on_drawing_2d_box(carla_img, coordinates, actor_type, actor_id, box_thickness=1):
         tmp_img = carla_img
-        # print('############################################')
-        # print('coord received DRAW: ', coordinates)
-        # print('############################################')
         for c, a, i in zip(coordinates, actor_type, actor_id):
             c1 = (c[0], c[1])
             c2 = (c[2], c[3])
             c3 = (c[0], c[1]-10)
-            # print(c1)
-            # print(c2)
-            # print(actor_id, ' ', actor_type)
-            # print("C[0]: ", type(c[0]))
-            # print('type (a): ', type(a), ' a: ', a)
 
             tmp_img = cv.rectangle(tmp_img, c1, c2, (0, 0, 254), box_thickness)
             cv.putText(tmp_img, "ID: "+str(i), c3, cv.FONT_HERSHEY_PLAIN, 0.8, (255, 255, 255), box_thickness)
@@ -424,23 +385,12 @@ class ObjectDetectionWithOpenCV(object):
     def on_saving_copy(img, img_name):
         path = Path('../res/files/copy/images')
         img_n = path / 'copy-{}'.format(img_name)
-        print(img_n)
         cv.imwrite(str(img_n), img)
         print('Image saved!')
 
     @staticmethod
     def draw_2d_box(coordinates, im, actor_typs, actor_ids):
-        path_im = os.path.join('/home/rack/', '{}_modified.png'.format(im))
-        print("IMA: ")
-
         img_with_box = ObjectDetectionWithOpenCV.on_drawing_2d_box(im, coordinates, actor_typs, actor_ids)
-        # print("type im  imshow: ", type(im))
-        # print("type imm  imshow: ", type(imm))
-        # cv.imshow("{}".format(im_name), im)
-        # cv.imwrite(path_im, imm)
-        # cv.waitKey(0)
-        # ObjectDetectionWithOpenCV.on_saving_copy(imm, im_name)
-        # cv.destroyWindow("{}".format(im_name))
         return img_with_box
 
     @staticmethod
@@ -450,37 +400,5 @@ class ObjectDetectionWithOpenCV(object):
         coord, obj_typ, obj_id = ImageBBoxCoordinate.on_getting_bbox(json_file['debug_info'], json_file, calibrate)
         box_coor, label_typ, label_id = ImageBBoxCoordinate.extract_2d_coordinate(coord, obj_typ, obj_id)
         img_with_box = ObjectDetectionWithOpenCV.draw_2d_box(box_coor, image, label_typ, label_id)
-        # print('type: ', type(box_img))
-        print(len(label_typ), len(label_id), len(box_coor))
-        print(box_coor)
-        for b in box_coor:
-            print(b)
-            for bb in b:
-                print(bb)
+
         return img_with_box, label_id, label_typ, box_coor
-
-    @staticmethod
-    def play():
-        try:
-            img_lst, json_lst = CustomCarlaDataset.load()
-            im, im_name = CustomCarlaDataset.on_load_img(3)
-            jfile = CustomCarlaDataset.on_load_file(3)
-            # debug_info = jfile['debug_info'][0]
-            # calib = ImageBBoxCoordinate.on_calibrate(jfile['img_width'], jfile['img_height'], jfile['img_fov'])
-            #
-            # info = jfile['debug_info']
-            # gbox, a_typ, a_id = ImageBBoxCoordinate.on_getting_bbox(info, jfile, calib)
-            #
-            # pyboxcoord, typ_text, id_text = ImageBBoxCoordinate.extract_2d_coordinate(gbox, a_typ, a_id)
-            # print('############# PYBOX #################')
-            # print(pyboxcoord)
-            # print('++++++++++ THE END +++++++++++')
-            # ObjectDetectionWithOpenCV.draw_2d_box(pyboxcoord, im, typ_text, id_text)
-            img = ObjectDetectionWithOpenCV.on_draw(im, jfile)
-        finally:
-            # pyg.quit()
-            print('Ciao !')
-
-
-if __name__ == '__main__':
-    ObjectDetectionWithOpenCV.play()
