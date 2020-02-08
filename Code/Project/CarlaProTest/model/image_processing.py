@@ -90,7 +90,13 @@ class CustomCarlaDataset(object):
         rearranged_img = cv.merge((red, green, blue))
         return rearranged_img
 
-
+    @staticmethod
+    def dict_to_json_format(data_dict, name):
+        path = Path('../res/files/copy/labels')
+        file_name = path / 'copy-{}.json'.format(name)
+        with open(file_name, 'w', encoding='utf-8') as f:
+            f.write(json.dumps(data_dict, indent=3, ensure_ascii=False))
+        print('File wrote (+ +)')
 #######################################################################
 #               Custom class for bounding box                         #
 #######################################################################

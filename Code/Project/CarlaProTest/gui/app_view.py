@@ -233,7 +233,11 @@ class MainPanel(object):
         img_info = CustomCarlaDataset.on_load_file(count)
 
         box_img_arr, lbl_id, lbl_typ, box_coord = ObjectDetectionWithOpenCV.on_draw(img_arr, img_info)
+        simplified_json = self.on_show_detected_obj(lbl_id, lbl_typ, box_coord)
+        name = img_name.split('.')
+
         ObjectDetectionWithOpenCV.on_saving_copy(box_img_arr, img_name)
+        CustomCarlaDataset.dict_to_json_format(simplified_json, name[0])
 
     def on_save_all(self):
         print('Saving...')
@@ -244,7 +248,11 @@ class MainPanel(object):
             img_info = CustomCarlaDataset.on_load_file(count)
 
             box_img_arr, lbl_id, lbl_typ, box_coord = ObjectDetectionWithOpenCV.on_draw(img_arr, img_info)
+            simplified_json = self.on_show_detected_obj(lbl_id, lbl_typ, box_coord)
+            name = img_name.split('.')
+
             ObjectDetectionWithOpenCV.on_saving_copy(box_img_arr, img_name)
+            CustomCarlaDataset.dict_to_json_format(simplified_json, name[0])
 
             count += 1
 
@@ -252,18 +260,22 @@ class MainPanel(object):
 
     def on_show_detected_obj(self, id_lst, class_lst, coor_lst):
         self.info_entry.delete(1.0, tk.END)
+        json_dict = {'object': []}
         self.info_entry.insert(tk.INSERT, 'Id \tClass \tP0 \tP1 \tP2 \tP3\n')
         for _id, _class, _coord in zip(id_lst, class_lst, coor_lst):
-            _p0 = _coord[0]
-            _p1 = _coord[1]
-            _p2 = _coord[2]
-            _p3 = _coord[3]
+            tmp_dict = {'Id': _id, 'Class': _class, 'P0': 0, 'P1': 0, 'P2': 0, 'P3': 0}
+            tmp_dict['P0'] = _p0 = _coord[0]
+            tmp_dict['P1'] = _p1 = _coord[1]
+            tmp_dict['P2'] = _p2 = _coord[2]
+            tmp_dict['P3'] = _p3 = _coord[3]
+
             print('ID: ', _id, ' class: ', _class, _p0, _p1, _p2, _p3)
             self.info_entry.insert(tk.INSERT, str(_id)+' \t'+str(_class)+'\t'+str(_p0)+'\t'+str(_p1)+'\t'+str(_p2)+'\t'+str(_p3)+'\n')
-        #
+            json_dict['object'].append(tmp_dict)
         # print('get TEXT')
         # text = self.info_entry.get(1.0, tk.END)
-        # print(text)
+        print(json_dict)
+        return json_dict
 
     def on_show_img_original(self, count):
         print('on show original')
