@@ -259,14 +259,14 @@ class ImageBBoxCoordinate(object):
                 p0 = (xmin, ymin)
                 p2 = (xmax, ymax)
 
-                if ((xmax - xmin) >= 15) and ((ymax - ymin) >= 20):
+                if ((xmax - xmin) >= 13) and ((ymax - ymin) >= 14):
                     coordinates.append(p0 + p2)
                     splited_vehicle_lbl = a_typ.split('.')
                     for lbl in splited_vehicle_lbl:
                         if lbl == 'vehicle':
                             typ_text.append(lbl)
                     id_text.append(a_id)
-                elif ((xmax - xmin) >= 15) and ((ymax - ymin) >= 15):
+                elif ((xmax - xmin) >= 11) and ((ymax - ymin) >= 13):
                     coordinates.append(p0 + p2)
                     splited_pedestrian_lbl = a_typ.split('.')
                     for lbl in splited_pedestrian_lbl:
