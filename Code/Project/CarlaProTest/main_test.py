@@ -21,7 +21,7 @@ from model.sensor_test import CustomDataDebugger
 
 # provide enough waiting time to avoid RuntimeError while trying
 # while to wait connection answer from the server
-def on_setting_world(client, desired_map='Town04'):
+def on_setting_world(client, desired_map='Town02'):
     # retrieve the world through the current client
     world = client.load_world(desired_map)
 

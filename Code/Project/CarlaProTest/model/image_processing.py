@@ -229,6 +229,7 @@ class ImageBBoxCoordinate(object):
 
     @staticmethod
     def extract_2d_coordinate(bbox, actor_type, actor_id):
+        # error occurs here
         coordinates = []
         typ_text = []
         id_text = []
@@ -238,7 +239,10 @@ class ImageBBoxCoordinate(object):
             ymin = point2d[0][1]
             xmax = point2d[0][0]
             ymax = point2d[0][1]
-
+            print('Min', xmin)
+            print('xMax: ', xmax)
+            print('yMin: ', ymin)
+            print('yMax: ', ymax)
             for p in point2d:
                 if xmin >= 0:
                     if 0 <= p[0] <= xmin:
@@ -259,14 +263,14 @@ class ImageBBoxCoordinate(object):
                 p0 = (xmin, ymin)
                 p2 = (xmax, ymax)
 
-                if ((xmax - xmin) >= 13) and ((ymax - ymin) >= 14):
+                if ((xmax - xmin) >= 11) and ((ymax - ymin) >= 15):
                     coordinates.append(p0 + p2)
                     splited_vehicle_lbl = a_typ.split('.')
                     for lbl in splited_vehicle_lbl:
                         if lbl == 'vehicle':
                             typ_text.append(lbl)
                     id_text.append(a_id)
-                elif ((xmax - xmin) >= 11) and ((ymax - ymin) >= 13):
+                elif ((xmax - xmin) >= 10) and ((ymax - ymin) >= 10):
                     coordinates.append(p0 + p2)
                     splited_pedestrian_lbl = a_typ.split('.')
                     for lbl in splited_pedestrian_lbl:
