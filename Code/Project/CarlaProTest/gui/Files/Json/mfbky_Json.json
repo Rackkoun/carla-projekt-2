@@ -1,0 +1,98 @@
+{
+    "number_of_walkers": 4,
+    "vehicles": [
+        {
+            "min_x": 586,
+            "min_y": 424,
+            "max_y": 681,
+            "max_x": 693
+        },
+        {
+            "min_x": 333,
+            "min_y": 324,
+            "max_y": 351,
+            "max_x": 417
+        },
+        {
+            "min_x": 40,
+            "min_y": 328,
+            "max_y": 350,
+            "max_x": 130
+        },
+        {
+            "min_x": 195,
+            "min_y": 326,
+            "max_y": 350,
+            "max_x": 269
+        },
+        {
+            "min_x": 578,
+            "min_y": 372,
+            "max_y": 494,
+            "max_x": 701
+        },
+        {
+            "min_x": 271,
+            "min_y": 328,
+            "max_y": 355,
+            "max_x": 369
+        },
+        {
+            "min_x": 28,
+            "min_y": 317,
+            "max_y": 338,
+            "max_x": 86
+        },
+        {
+            "min_x": 0,
+            "min_y": 311,
+            "max_y": 337,
+            "max_x": 77
+        },
+        {
+            "min_x": 602,
+            "min_y": 355,
+            "max_y": 419,
+            "max_x": 677
+        },
+        {
+            "min_x": 156,
+            "min_y": 332,
+            "max_y": 355,
+            "max_x": 254
+        },
+        {
+            "min_x": 611,
+            "min_y": 338,
+            "max_y": 386,
+            "max_x": 668
+        }
+    ],
+    "number_of_vehicles": 11,
+    "walkers": [
+        {
+            "min_x": 468,
+            "min_y": 336,
+            "max_y": 364,
+            "max_x": 485
+        },
+        {
+            "min_x": 465,
+            "min_y": 339,
+            "max_y": 362,
+            "max_x": 478
+        },
+        {
+            "min_x": 701,
+            "min_y": 331,
+            "max_y": 354,
+            "max_x": 714
+        },
+        {
+            "min_x": 853,
+            "min_y": 363,
+            "max_y": 499,
+            "max_x": 930
+        }
+    ]
+}

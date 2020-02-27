@@ -1,0 +1,92 @@
+{
+    "number_of_walkers": 8,
+    "vehicles": [
+        {
+            "min_x": 586,
+            "min_y": 424,
+            "max_y": 681,
+            "max_x": 693
+        },
+        {
+            "min_x": 1,
+            "min_y": 317,
+            "max_y": 406,
+            "max_x": 76
+        },
+        {
+            "min_x": 199,
+            "min_y": 338,
+            "max_y": 391,
+            "max_x": 362
+        },
+        {
+            "min_x": 565,
+            "min_y": 320,
+            "max_y": 350,
+            "max_x": 597
+        },
+        {
+            "min_x": 22,
+            "min_y": 340,
+            "max_y": 388,
+            "max_x": 158
+        },
+        {
+            "min_x": 550,
+            "min_y": 328,
+            "max_y": 357,
+            "max_x": 592
+        }
+    ],
+    "number_of_vehicles": 6,
+    "walkers": [
+        {
+            "min_x": 474,
+            "min_y": 333,
+            "max_y": 357,
+            "max_x": 491
+        },
+        {
+            "min_x": 19,
+            "min_y": 316,
+            "max_y": 335,
+            "max_x": 36
+        },
+        {
+            "min_x": 519,
+            "min_y": 316,
+            "max_y": 335,
+            "max_x": 528
+        },
+        {
+            "min_x": 39,
+            "min_y": 344,
+            "max_y": 371,
+            "max_x": 67
+        },
+        {
+            "min_x": 81,
+            "min_y": 387,
+            "max_y": 469,
+            "max_x": 166
+        },
+        {
+            "min_x": 782,
+            "min_y": 342,
+            "max_y": 423,
+            "max_x": 822
+        },
+        {
+            "min_x": 735,
+            "min_y": 332,
+            "max_y": 390,
+            "max_x": 761
+        },
+        {
+            "min_x": 806,
+            "min_y": 358,
+            "max_y": 481,
+            "max_x": 871
+        }
+    ]
+}

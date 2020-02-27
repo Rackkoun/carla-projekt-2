@@ -1,0 +1,110 @@
+{
+    "number_of_walkers": 10,
+    "vehicles": [
+        {
+            "min_x": 586,
+            "min_y": 424,
+            "max_y": 681,
+            "max_x": 693
+        },
+        {
+            "min_x": 27,
+            "min_y": 327,
+            "max_y": 362,
+            "max_x": 51
+        },
+        {
+            "min_x": 520,
+            "min_y": 362,
+            "max_y": 508,
+            "max_x": 685
+        },
+        {
+            "min_x": 460,
+            "min_y": 346,
+            "max_y": 422,
+            "max_x": 573
+        },
+        {
+            "min_x": 257,
+            "min_y": 372,
+            "max_y": 565,
+            "max_x": 462
+        },
+        {
+            "min_x": 430,
+            "min_y": 335,
+            "max_y": 389,
+            "max_x": 511
+        },
+        {
+            "min_x": 418,
+            "min_y": 332,
+            "max_y": 369,
+            "max_x": 469
+        }
+    ],
+    "number_of_vehicles": 7,
+    "walkers": [
+        {
+            "min_x": 790,
+            "min_y": 320,
+            "max_y": 347,
+            "max_x": 806
+        },
+        {
+            "min_x": 618,
+            "min_y": 357,
+            "max_y": 406,
+            "max_x": 649
+        },
+        {
+            "min_x": 473,
+            "min_y": 330,
+            "max_y": 353,
+            "max_x": 487
+        },
+        {
+            "min_x": 4,
+            "min_y": 405,
+            "max_y": 509,
+            "max_x": 79
+        },
+        {
+            "min_x": 984,
+            "min_y": 409,
+            "max_y": 670,
+            "max_x": 1166
+        },
+        {
+            "min_x": 446,
+            "min_y": 327,
+            "max_y": 346,
+            "max_x": 457
+        },
+        {
+            "min_x": 205,
+            "min_y": 327,
+            "max_y": 346,
+            "max_x": 223
+        },
+        {
+            "min_x": 564,
+            "min_y": 332,
+            "max_y": 392,
+            "max_x": 594
+        },
+        {
+            "min_x": 590,
+            "min_y": 355,
+            "max_y": 390,
+            "max_x": 611
+        },
+        {
+            "min_x": 438,
+            "min_y": 317,
+            "max_y": 338,
+            "max_x": 448
+        }
+    ]
+}
