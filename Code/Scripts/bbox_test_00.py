@@ -78,7 +78,7 @@ def obj_in_box():
         ########################################
         # box for auto
         ########################################
-        w_debug.draw_box(
+        w_debug.draw_box_red(
             carla.BoundingBox(
                 auto_actor_00.get_transform().location,
                 carla.Vector3D(5.5, 5.5, 5.5)
@@ -113,7 +113,7 @@ def obj_in_box():
         #########################################
         # box pedestrian
         #########################################
-        w_debug.draw_box(
+        w_debug.draw_box_red(
             carla.BoundingBox(
                 laeufer_actor_00.get_transform().location,
                 carla.Vector3D(2.5, 2.5, 2.5)

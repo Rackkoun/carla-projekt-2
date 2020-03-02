@@ -1,0 +1,44 @@
+{
+    "number_of_walkers": 2,
+    "number_of_vehicles": 4,
+    "vehicles": [
+        {
+            "min_x": 88,
+            "max_x": 240,
+            "max_y": 476,
+            "min_y": 356
+        },
+        {
+            "min_x": 789,
+            "max_x": 888,
+            "max_y": 368,
+            "min_y": 337
+        },
+        {
+            "min_x": 572,
+            "max_x": 708,
+            "max_y": 496,
+            "min_y": 368
+        },
+        {
+            "min_x": 586,
+            "max_x": 693,
+            "max_y": 681,
+            "min_y": 424
+        }
+    ],
+    "walkers": [
+        {
+            "min_x": 935,
+            "max_x": 955,
+            "max_y": 358,
+            "min_y": 323
+        },
+        {
+            "min_x": 913,
+            "max_x": 976,
+            "max_y": 449,
+            "min_y": 347
+        }
+    ]
+}

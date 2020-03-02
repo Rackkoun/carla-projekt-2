@@ -158,7 +158,7 @@ def on_debugging(obj_snap, welt, obj):
         yx = bbox.extent.y # * 0. mit null multiplizieren, um ein Viereck zu haben
         zx = bbox.extent.z + 0.7
 
-        debug.draw_box(
+        debug.draw_box_red(
             box=carla.BoundingBox(
                 aloc,
                 carla.Vector3D(

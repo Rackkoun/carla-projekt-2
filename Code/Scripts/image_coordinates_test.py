@@ -6,11 +6,19 @@ class Draw_Box_On_Image:
         print("Start")
 
 
-    def draw_box(self,img,x,y,h,w):
+    def draw_box_red(self, img, x, y, h, w):
 
         border=2
 
         new_image=cv2.rectangle(img, (x,y),(x+h,y+w),(0,0,255),border)
+
+        return new_image
+
+    def draw_box_green(self, img, x, y, h, w):
+
+        border=2
+
+        new_image=cv2.rectangle(img, (x,y),(x+h,y+w),(0,255,0),border)
 
         return new_image
 
@@ -45,7 +53,7 @@ class Draw_Box_On_Image:
 
         w = 71      # width
 
-        my_new_image_array = self.draw_box(image_array,x,y,h,w)
+        my_new_image_array = self.draw_box_red(image_array, x, y, h, w)
 
         print("first Box generated")
 
@@ -57,7 +65,7 @@ class Draw_Box_On_Image:
 
         w = 49
 
-        my_new_image_array = self.draw_box(my_new_image_array,x,y,h,w)
+        my_new_image_array = self.draw_box_green(my_new_image_array, x, y, h, w)
 
         x = 88
 
@@ -67,7 +75,7 @@ class Draw_Box_On_Image:
 
         w = 100
 
-        my_new_image_array = self.draw_box(my_new_image_array, x, y, h, w)
+        my_new_image_array = self.draw_box_red(my_new_image_array, x, y, h, w)
 
         self.show_box(my_new_image_array)   # press c to quit the image
 

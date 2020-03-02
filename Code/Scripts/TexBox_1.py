@@ -111,7 +111,7 @@ def main():
         transform = new_actor.get_transform()
         bounding_box = new_actor.bounding_box
         bounding_box.location += transform.location
-        my_world.debug.draw_box(bounding_box, transform.rotation,life_time=0.2,persistent_lines=True)
+        my_world.debug.draw_box_red(bounding_box, transform.rotation, life_time=0.2, persistent_lines=True)
 
         time.sleep(0.2)
 
