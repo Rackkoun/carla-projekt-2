@@ -3,8 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
 
-from model.image_processing import CustomCarlaDataset, ObjectDetectionWithOpenCV
-# from image_processing import CustomCarlaDataset
+from model.test_cv import CUSANIDatasetManger, Box2DClass
 
 
 class MainApp(object):
@@ -14,7 +13,7 @@ class MainApp(object):
         self.main_window = tk.Tk()
         self.main_window.title("Project 2: WiSo19/20")
 
-        im_lst, json_lst = CustomCarlaDataset.load()
+        im_lst, json_lst = CUSANIDatasetManger.load()
         self.main_panel = MainPanel(self.main_window, len(im_lst))
 
 
@@ -72,20 +71,20 @@ class MainPanel(object):
         self.next_btn = ttk.Button(nav_container, text='next', command=self.on_next_clicked)
         self.next_btn.grid(row=1, column=2, padx=1, pady=5, sticky='E')
 
-        action_container = ttk.LabelFrame(container_control, text='Save File(s)', padding=(3, 3, 3, 3))
+        action_container = ttk.LabelFrame(container_control, text='Save image(s)', padding=(3, 3, 3, 3))
         action_container.pack(side=tk.BOTTOM, fill=tk.X, expand=tk.YES, padx=5, pady=10)
 
-        self.save_current_btn = ttk.Button(action_container, text='save current img', command=self.on_save)
+        self.save_current_btn = ttk.Button(action_container, text='current img', command=self.on_save)
         self.save_current_btn.pack(side=tk.LEFT, padx=5, pady=10)
 
-        self.save_all_btn = ttk.Button(action_container, text='save all img', command=self.on_save_all)
+        self.save_all_btn = ttk.Button(action_container, text='all imgs', command=self.on_save_all)
         self.save_all_btn.pack(side=tk.RIGHT, padx=5, pady=10)
 
         # container for drawing 2D bbox and id for objects
-        self.detected_obj_container = ttk.LabelFrame(container_control, text='Detected object info', padding=(3, 3, 3, 3))
+        self.detected_obj_container = ttk.LabelFrame(container_control, text='Detected object(s)', padding=(3, 3, 3, 3))
         self.detected_obj_container.pack(side=tk.BOTTOM, fill=tk.X, padx=5, pady=10)
 
-        self.info_entry = tk.Text(self.detected_obj_container, wrap=tk.WORD, height=8, width=50)
+        self.info_entry = tk.Text(self.detected_obj_container, wrap=tk.WORD, height=2, width=30)
         self.info_entry.pack(padx=8, pady=5)
         # Visualization
         self.container_visualization = ttk.LabelFrame(master=self.frame_visualization, text='visualization panel',
@@ -203,84 +202,62 @@ class MainPanel(object):
     def on_save(self):
         print('SAVE PRESSED')
         count = self.count.get()
-        img_arr, img_name = CustomCarlaDataset.on_load_img(count)
-        img_info = CustomCarlaDataset.on_load_file(count)
+        img_arr, img_name = CUSANIDatasetManger.on_load_img(count)
+        img_info = CUSANIDatasetManger.on_load_file(count)
 
-        box_img_arr, lbl_id, lbl_typ, box_coord = ObjectDetectionWithOpenCV.on_draw(img_arr, img_info)
-        simplified_json = self.on_show_detected_obj(lbl_id, lbl_typ, box_coord)
-        name = img_name.split('.')
-
-        ObjectDetectionWithOpenCV.on_saving_copy(box_img_arr, img_name)
-        CustomCarlaDataset.dict_to_json_format(simplified_json, name[0])
+        imag, v_lst, p_lst = Box2DClass.identity_all(img_arr, img_info)
+        Box2DClass.on_saving_copy(imag, img_name)
 
     def on_save_all(self):
         print('Saving...')
         count = 0
         max_count = self.max_count.get()
         while count < max_count:
-            img_arr, img_name = CustomCarlaDataset.on_load_img(count)
-            img_info = CustomCarlaDataset.on_load_file(count)
-
-            box_img_arr, lbl_id, lbl_typ, box_coord = ObjectDetectionWithOpenCV.on_draw(img_arr, img_info)
-            simplified_json = self.on_show_detected_obj(lbl_id, lbl_typ, box_coord)
-            name = img_name.split('.')
-
-            ObjectDetectionWithOpenCV.on_saving_copy(box_img_arr, img_name)
-            CustomCarlaDataset.dict_to_json_format(simplified_json, name[0])
+            img_arr, img_name = CUSANIDatasetManger.on_load_img(count)
+            img_info = CUSANIDatasetManger.on_load_file(count)
+            imag, v_lst, p_lst = Box2DClass.identity_all(img_arr, img_info)
+            Box2DClass.on_saving_copy(imag, img_name)
 
             count += 1
 
         print('Finish')
 
-    def on_show_detected_obj(self, id_lst, class_lst, coor_lst):
+    def on_show_detected_obj(self, v_len, p_len):
         self.info_entry.delete(1.0, tk.END)
-        json_dict = {'object': []}
-        self.info_entry.insert(tk.INSERT, 'Id \tClass \tP0 \tP1 \tP2 \tP3\n')
-        for _id, _class, _coord in zip(id_lst, class_lst, coor_lst):
-            tmp_dict = {'Id': _id, 'Class': _class, 'P0': 0, 'P1': 0, 'P2': 0, 'P3': 0}
-            tmp_dict['P0'] = _p0 = _coord[0]
-            tmp_dict['P1'] = _p1 = _coord[1]
-            tmp_dict['P2'] = _p2 = _coord[2]
-            tmp_dict['P3'] = _p3 = _coord[3]
-
-            self.info_entry.insert(tk.INSERT, str(_id)+' \t'+str(_class)+'\t'+str(_p0)+'\t'+str(_p1)+'\t'+str(_p2)+'\t'+str(_p3)+'\n')
-            json_dict['object'].append(tmp_dict)
-        return json_dict
+        self.info_entry.insert(tk.INSERT, 'Number of vehicle(s): '+str(v_len) + '\n')
+        self.info_entry.insert(tk.INSERT,  'Number of pedestrian(s): '+str(p_len) + '\n')
 
     def on_show_img_original(self, count):
-        array_img, img_name = CustomCarlaDataset.on_load_img(count)
-        re_arrange = CustomCarlaDataset.rearrang_img_for_gui(array_img)
+        array_img, img_name = CUSANIDatasetManger.on_load_img(count)
+        re_arrange = CUSANIDatasetManger.rearrang_img_for_gui(array_img)
         origin_img = Image.fromarray(re_arrange)
 
         # resize the image to diplay on the GUI
-        origin_img.thumbnail((420, 440), Image.ANTIALIAS)
+        origin_img.thumbnail((620, 640), Image.ANTIALIAS)
         img_lbl = ImageTk.PhotoImage(image=origin_img)
         self.origin_img_lbl.configure(image=img_lbl, anchor=tk.NW)
         self.origin_img_lbl.image = img_lbl
         self.origin_img_lbl.pack(padx=8, pady=8)
 
     def on_show_img_copy(self, count):
-        img_arr, img_name = CustomCarlaDataset.on_load_img(count)
-        img_info = CustomCarlaDataset.on_load_file(count)
+        img_arr, img_name = CUSANIDatasetManger.on_load_img(count)
+        img_info = CUSANIDatasetManger.on_load_file(count)
 
-        box_img_arr, lbl_id, lbl_typ, box_coord = ObjectDetectionWithOpenCV.on_draw(img_arr, img_info)
-        box_re_arranged = CustomCarlaDataset.rearrang_img_for_gui(box_img_arr)
-        re_arrange = CustomCarlaDataset.rearrang_img_for_gui(img_arr)
-        origin_img = Image.fromarray(re_arrange)
+        box_img_arr, v_lst, p_lst = Box2DClass.identity_all(img_arr, img_info)
+        box_re_arranged = CUSANIDatasetManger.rearrang_img_for_gui(box_img_arr)
         box_copy_img = Image.fromarray(box_re_arranged)
 
-        self.on_show_detected_obj(lbl_id, lbl_typ, box_coord)
+        self.on_show_detected_obj(v_lst, p_lst)
 
         # resize the image to diplay on the GUI
-        origin_img.thumbnail((420, 440), Image.ANTIALIAS)
-        box_copy_img.thumbnail((420, 440), Image.ANTIALIAS)
+        box_copy_img.thumbnail((620, 640), Image.ANTIALIAS)
         img_lbl = ImageTk.PhotoImage(image=box_copy_img)
         self.copy_img_lbl.configure(image=img_lbl, anchor=tk.NW)
         self.copy_img_lbl.image = img_lbl
         self.copy_img_lbl.pack(padx=8, pady=8)
 
     def on_show_json_content(self, count):
-        content = CustomCarlaDataset.on_load_file(count)
+        content = CUSANIDatasetManger.on_load_file(count)
 
         # delete the old content and put the new one
         self.json_content.delete(1.0, tk.END)
@@ -289,33 +266,19 @@ class MainPanel(object):
             if isinstance(v, dict):
                 self.json_content.insert(tk.INSERT, '\t' + '\"' + str(k) + '\"' + ':' + '{\n')
                 for nk, nv in v.items():
-                    if isinstance(nv, dict):
-                        self.json_content.insert(tk.INSERT, '\t\t' + '\"' + str(nk) + '\":{\n')
-                        for nnk, nnv in nv.items():
-                            self.json_content.insert(tk.INSERT, '\t\t\t' + '\"' + str(nnk) + '\":' + str(nnv) + ',\n')
-                        self.json_content.insert(tk.INSERT, '\t\t},\n')
-                    elif isinstance(nv, list):
-                        pass
-                    else:
-                        self.json_content.insert(tk.INSERT, '\t\t\"' + str(nk) + '\":' + str(nv) + ',\n')
-                self.json_content.insert(tk.INSERT, '\t},\n')
-            elif isinstance(v, list):
-                self.json_content.insert(tk.INSERT, '\t\"' + str(k) + '\":[\n')
-                for elem in v:
-                    self.json_content.insert(tk.INSERT, '\t\t{\n')
-                    if isinstance(elem, dict):
-                        for nk_elem, nv_elem in elem.items():
-                            if isinstance(nv_elem, dict):
-                                self.json_content.insert(tk.INSERT, '\t\t\t\"' + str(nk_elem) + '\":{\n')
-                                for nnk_elem, nnv_elem in nv_elem.items():
-                                    self.json_content.insert(tk.INSERT, '\t\t\t\t\"' + str(nnk_elem) + '\":' + str(
-                                        nnv_elem) + ',\n')
+                    if isinstance(nv, list):
+                        self.json_content.insert(tk.INSERT, '\t\t' + '\"' + str(nk) + '\":[\n')
+                        for n in nv:
+                            if isinstance(n, dict):
+                                self.json_content.insert(tk.INSERT, '\t\t\t{\n')
+                                for nnk, nnv in n.items():
+                                    self.json_content.insert(tk.INSERT, '\t\t\t\t' + '\"' + str(nnk) + '\":' + str(nnv) + ',\n')
                                 self.json_content.insert(tk.INSERT, '\t\t\t},\n')
                             else:
-                                self.json_content.insert(tk.INSERT,
-                                                         '\t\t\t\"' + str(nk_elem) + '\":' + str(nv_elem) + ',\n')
-                    self.json_content.insert(tk.INSERT, '\t\t},\n')
-                self.json_content.insert(tk.INSERT, '\t]\n')
+                                pass
+                        self.json_content.insert(tk.INSERT, '\t\t],\n')
+                    else:
+                        self.json_content.insert(tk.INSERT, '\t\t\"' + str(nk) + '\":' + str(nv) + ',\n')
             else:
                 self.json_content.insert(tk.INSERT, '\t\"' + str(k) + '\":' + str(v) + ',\n')
         self.json_content.insert(tk.INSERT, '\n}')
