@@ -1,10 +1,11 @@
+#!/usr/bin/python
 import tkinter as tk
-
 from tkinter import ttk
+
 from PIL import Image, ImageTk
 
 from model.test_cv import CUSANIDatasetManger, Box2DClass
-
+from model.client_bounding_boxes_edited import BasicSynchronousClient
 
 class MainApp(object):
 
@@ -71,6 +72,16 @@ class MainPanel(object):
         self.next_btn = ttk.Button(nav_container, text='next', command=self.on_next_clicked)
         self.next_btn.grid(row=1, column=2, padx=1, pady=5, sticky='E')
 
+        # container to generate dataset through pygame (when CARLA is running)
+        dataset_container = ttk.LabelFrame(container_control, text='Generate images', padding=(3, 3, 3, 3))
+        dataset_container.pack(side=tk.BOTTOM, fill=tk.X, expand=tk.YES, padx=5, pady=10)
+
+        self.generate_btn = ttk.Button(dataset_container, text='Start', command=self.on_start_generate)
+        self.generate_btn.pack(side=tk.LEFT, padx=5, pady=10)
+
+        self.stop_btn = ttk.Button(dataset_container, text='Stop', command=self.on_stop_generate)
+        self.stop_btn.pack(side=tk.RIGHT, padx=5, pady=10)
+
         action_container = ttk.LabelFrame(container_control, text='Save image(s)', padding=(3, 3, 3, 3))
         action_container.pack(side=tk.BOTTOM, fill=tk.X, expand=tk.YES, padx=5, pady=10)
 
@@ -133,11 +144,11 @@ class MainPanel(object):
         self.on_show_json_content(self.count.get())
         # self.on_show_detected_obj()
 
-        if self.count.get() - 1 <= 0:
+        if self.count.get() - 1 < 0:
             print("got the first Image")
             self.prev_btn.config(state="disabled")
 
-        if self.count.get() + 1 >= self.max_count.get():
+        if self.count.get() + 1 > self.max_count.get():
             print("got the last Image")
             self.next_btn.config(state="disabled")
 
@@ -224,8 +235,8 @@ class MainPanel(object):
 
     def on_show_detected_obj(self, v_len, p_len):
         self.info_entry.delete(1.0, tk.END)
-        self.info_entry.insert(tk.INSERT, 'Number of vehicle(s): '+str(v_len) + '\n')
-        self.info_entry.insert(tk.INSERT,  'Number of pedestrian(s): '+str(p_len) + '\n')
+        self.info_entry.insert(tk.INSERT, 'Number of vehicle(s): ' + str(v_len) + '\n')
+        self.info_entry.insert(tk.INSERT, 'Number of pedestrian(s): ' + str(p_len) + '\n')
 
     def on_show_img_original(self, count):
         array_img, img_name = CUSANIDatasetManger.on_load_img(count)
@@ -272,7 +283,8 @@ class MainPanel(object):
                             if isinstance(n, dict):
                                 self.json_content.insert(tk.INSERT, '\t\t\t{\n')
                                 for nnk, nnv in n.items():
-                                    self.json_content.insert(tk.INSERT, '\t\t\t\t' + '\"' + str(nnk) + '\":' + str(nnv) + ',\n')
+                                    self.json_content.insert(tk.INSERT,
+                                                             '\t\t\t\t' + '\"' + str(nnk) + '\":' + str(nnv) + ',\n')
                                 self.json_content.insert(tk.INSERT, '\t\t\t},\n')
                             else:
                                 pass
@@ -282,6 +294,20 @@ class MainPanel(object):
             else:
                 self.json_content.insert(tk.INSERT, '\t\"' + str(k) + '\":' + str(v) + ',\n')
         self.json_content.insert(tk.INSERT, '\n}')
+
+    # def exec_on_thread(self):
+    #     t = Thread(target=self.on_generate)
+    #     t.start()
+    #     time.sleep(3)
+    #     if t.is_alive():
+    #         t.join()
+    #         print(t.is_alive())
+
+    def on_start_generate(self):
+        BasicSynchronousClient.on_start()
+
+    def on_stop_generate(self):
+        BasicSynchronousClient.on_stop()
 
 
 if __name__ == '__main__':

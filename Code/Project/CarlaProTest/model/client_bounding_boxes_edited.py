@@ -340,24 +340,25 @@ class BasicSynchronousClient(object):
     """
 
     def __init__(self):
-        self.client = None
-        self.world = None
-        self.camera = None
+        print('Carla client started!')
+    client = None
+    world = None
+    camera = None
 
-        self.vehicles = None
-        self.pedestrians = None
-        self.ai_controllers = None
+    vehicles = None
+    pedestrians = None
+    ai_controllers = None
 
-        self.display = None
-        self.image = None
-        self.capture = True
-        self.image_name = None
+    display = None
+    image = None
+    capture = True
+    image_name = None
 
-        self.original_img_path = Path('../res/img/originals')
-        self.edited_img_path = Path('../res/img/edited')
-        self.jsons_path = Path('../res/img/jsons')
+    original_img_path = Path('../res/img/originals')
+    edited_img_path = Path('../res/img/edited')
+    jsons_path = Path('../res/img/jsons')
 
-        self.custom_annotation = {
+    custom_annotation = {
             'image_name': '',
             'object_1': {
                 'class': 'vehicle',
@@ -369,107 +370,111 @@ class BasicSynchronousClient(object):
             }
         }
 
-    def camera_blueprint(self):
+    @staticmethod
+    def camera_blueprint():
         """
         Returns camera blueprint.
         """
 
-        camera_bp = self.world.get_blueprint_library().find('sensor.camera.rgb')
+        camera_bp = BasicSynchronousClient.world.get_blueprint_library().find('sensor.camera.rgb')
         camera_bp.set_attribute('image_size_x', str(VIEW_WIDTH))
         camera_bp.set_attribute('image_size_y', str(VIEW_HEIGHT))
         camera_bp.set_attribute('fov', str(VIEW_FOV))
         return camera_bp
 
-    def set_synchronous_mode(self, synchronous_mode):
+    @staticmethod
+    def set_synchronous_mode(synchronous_mode):
         """
         Sets synchronous mode.
         """
 
-        settings = self.world.get_settings()
+        settings = BasicSynchronousClient.world.get_settings()
         settings.synchronous_mode = synchronous_mode
-        self.world.apply_settings(settings)
+        BasicSynchronousClient.world.apply_settings(settings)
 
-    def create_and_spawn_vehicles(self, number_of_vehicles=20):
+    @staticmethod
+    def create_and_spawn_vehicles(number_of_vehicles=20):
         """
         Spawn vehicles in the world, set all vehicle to self-drive mode
         """
         print("Adding vehicles...")
-        self.vehicles = []
+        BasicSynchronousClient.vehicles = []
         # spawns vehicle and get the first one to attach a camera on it
-        vehicles_bp = self.world.get_blueprint_library().filter('vehicle.*')
+        vehicles_bp = BasicSynchronousClient.world.get_blueprint_library().filter('vehicle.*')
         car_bp = vehicles_bp[0]
 
-        spawn_points = self.world.get_map().get_spawn_points()
+        spawn_points = BasicSynchronousClient.world.get_map().get_spawn_points()
 
         for i, transform in enumerate(spawn_points):
             if i == 0:
-                test_car = self.world.spawn_actor(car_bp, transform)
+                test_car = BasicSynchronousClient.world.spawn_actor(car_bp, transform)
                 test_car.set_autopilot()
-                self.vehicles.append(test_car)
+                BasicSynchronousClient.vehicles.append(test_car)
             elif i >= number_of_vehicles:
                 break
             else:
                 vehicle_bp = random.choice(vehicles_bp)
-                vehicle = self.world.spawn_actor(vehicle_bp, transform)
+                vehicle = BasicSynchronousClient.world.spawn_actor(vehicle_bp, transform)
                 vehicle.set_autopilot()
-                self.vehicles.append(vehicle)
-        print("number of vehicles added: ", len(self.vehicles))
-        # location = random.choice(self.world.get_map().get_spawn_points())
+                BasicSynchronousClient.vehicles.append(vehicle)
+        print("number of vehicles added: ", len(BasicSynchronousClient.vehicles))
 
-    def create_and_spawn_pedestrians(self, number_of_pedestrians=40):
+    @staticmethod
+    def create_and_spawn_pedestrians(number_of_pedestrians=40):
         """
         spawn walker in the world
         """
         print("Adding pedestrians...")
         # create a list to put all walkers together. so we could remove them from the world
-        self.pedestrians = []
-        self.ai_controllers = []
+        BasicSynchronousClient.pedestrians = []
+        BasicSynchronousClient.ai_controllers = []
         pedestrians_ids = []
 
         # load the walker library and it controller library
-        pedestrians_bp = bp = self.world.get_blueprint_library().filter('walker.pedestrian.*')
+        pedestrians_bp = bp = BasicSynchronousClient.world.get_blueprint_library().filter('walker.pedestrian.*')
 
         # get 40 random spawn points for pedestrians
         pedestrian_navigation_points = []
         for i in range(number_of_pedestrians):
             point = carla.Transform()
-            point.location = self.world.get_random_location_from_navigation()
+            point.location = BasicSynchronousClient.world.get_random_location_from_navigation()
             if point is not None:
                 pedestrian_navigation_points.append(point)
 
         # add pedestrians: they will not move until we attach ai-controller to each one
         for i, transform in enumerate(pedestrian_navigation_points):
             walker_bp = random.choice(pedestrians_bp)
-            walker = self.world.try_spawn_actor(walker_bp, transform)
+            walker = BasicSynchronousClient.world.try_spawn_actor(walker_bp, transform)
             if walker is not None:
-                self.pedestrians.append(walker)
+                BasicSynchronousClient.pedestrians.append(walker)
 
         # attach ai-controller to each walker
-        pedestrians_controller_bp = self.world.get_blueprint_library().find('controller.ai.walker')
-        for w in range(len(self.pedestrians)):
-            controller = self.world.spawn_actor(pedestrians_controller_bp, carla.Transform(), self.pedestrians[w])
-            self.ai_controllers.append(controller)
+        pedestrians_controller_bp = BasicSynchronousClient.world.get_blueprint_library().find('controller.ai.walker')
+        for w in range(len(BasicSynchronousClient.pedestrians)):
+            controller = BasicSynchronousClient.world.spawn_actor(pedestrians_controller_bp, carla.Transform(), BasicSynchronousClient.pedestrians[w])
+            BasicSynchronousClient.ai_controllers.append(controller)
 
         # put all ids (walkers and controllers) together in the same list to remove them from later from the world
-        for i in range(len(self.pedestrians)):
-            pedestrians_ids.append(self.pedestrians[i].id)
-            pedestrians_ids.append(self.ai_controllers[i].id)
+        for i in range(len(BasicSynchronousClient.pedestrians)):
+            pedestrians_ids.append(BasicSynchronousClient.pedestrians[i].id)
+            pedestrians_ids.append(BasicSynchronousClient.ai_controllers[i].id)
 
         # retrieve all elements in the world and places them in a list
         # all_pedestrians = []
-        all_pedestrians = self.world.get_actors(pedestrians_ids)
+        all_pedestrians = BasicSynchronousClient.world.get_actors(pedestrians_ids)
 
         # wait server confirmation
-        self.world.wait_for_tick()
+        BasicSynchronousClient.world.wait_for_tick()
 
         # enable automatic walk for pedestrian
-        for ai in self.ai_controllers:
+        for ai in BasicSynchronousClient.ai_controllers:
             ai.start()
-            ai.go_to_location(self.world.get_random_location_from_navigation())
+            ai.go_to_location(BasicSynchronousClient.world.get_random_location_from_navigation())
             ai.set_max_speed(1 + random.random())
         print("Len of pedestrians list: ", len(all_pedestrians))
 
-    def setup_camera(self):
+    @staticmethod
+    def setup_camera():
         """
         Spawns actor-camera to be used to render view.
         Sets calibration for client-side boxes rendering.
@@ -477,16 +482,16 @@ class BasicSynchronousClient(object):
 
         camera_transform = carla.Transform(carla.Location(x=-5.5, z=2.8), carla.Rotation(pitch=-15))
         # attach the camera to the first vehicle
-        self.camera = self.world.spawn_actor(self.camera_blueprint(), camera_transform, attach_to=self.vehicles[0])
-        weak_self = weakref.ref(self)
-        self.camera.listen(lambda image: weak_self().set_image(weak_self, image))
+        BasicSynchronousClient.camera = BasicSynchronousClient.world.spawn_actor(BasicSynchronousClient.camera_blueprint(), camera_transform, attach_to=BasicSynchronousClient.vehicles[0])
+        weak_self = weakref.ref(BasicSynchronousClient)
+        BasicSynchronousClient.camera.listen(lambda image: weak_self().set_image(weak_self, image))
 
         calibration = np.identity(3)
         calibration[0, 2] = VIEW_WIDTH / 2.0
         calibration[1, 2] = VIEW_HEIGHT / 2.0
         calibration[0, 0] = calibration[1, 1] = VIEW_WIDTH / (2.0 * np.tan(VIEW_FOV * np.pi / 360.0))
         print('CALIB: ', calibration)
-        self.camera.calibration = calibration
+        BasicSynchronousClient.camera.calibration = calibration
 
     def drive(self):
         """
@@ -506,13 +511,14 @@ class BasicSynchronousClient(object):
         set, next coming image will be stored.
         """
 
-        self = weak_self()
-        if self.capture:
-            self.image = img
-            self.image_name = self.image.frame
-            self.capture = False
+        BasicSynchronousClient = weak_self()
+        if BasicSynchronousClient.capture:
+            BasicSynchronousClient.image = img
+            BasicSynchronousClient.image_name = BasicSynchronousClient.image.frame
+            BasicSynchronousClient.capture = False
 
-    def save_img(self, coordinates_vehicles, coordinates_walkers):
+    @staticmethod
+    def save_img(coordinates_vehicles, coordinates_walkers):
         screen1 = pygame.display.get_surface()
         data1 = pygame.image.tostring(screen1, 'RGB')
         w1, h1 = screen1.get_size()
@@ -526,11 +532,11 @@ class BasicSynchronousClient(object):
         # reverse the image color format for opencv
         opencv_img = cv.cvtColor(img_array, cv.COLOR_RGB2BGR)
 
-        name_edited = str(self.image_name) + '_edited' + '.png'
-        name = str(self.image_name) + '.png'
+        name_edited = str(BasicSynchronousClient.image_name) + '_edited' + '.png'
+        name = str(BasicSynchronousClient.image_name) + '.png'
 
-        original_path = self.original_img_path / name
-        copy_path = self.edited_img_path / name_edited
+        original_path = BasicSynchronousClient.original_img_path / name
+        copy_path = BasicSynchronousClient.edited_img_path / name_edited
 
         v_annotation = []
         p_annotation = []
@@ -545,36 +551,95 @@ class BasicSynchronousClient(object):
             p_annotation_dict = {'P0': p[0], 'P1': p[1], 'P2': p[2], 'P3': p[3]}
             p_annotation.append(p_annotation_dict)
 
-        self.custom_annotation['image_name'] = str(self.image_name) + '.png'
-        self.custom_annotation['object_1']['identify'] = v_annotation
-        self.custom_annotation['object_2']['identify'] = p_annotation
-        self.create_annotation(self.custom_annotation, self.image_name)
+        BasicSynchronousClient.custom_annotation['image_name'] = str(BasicSynchronousClient.image_name) + '.png'
+        BasicSynchronousClient.custom_annotation['object_1']['identify'] = v_annotation
+        BasicSynchronousClient.custom_annotation['object_2']['identify'] = p_annotation
+        BasicSynchronousClient.create_annotation(BasicSynchronousClient.custom_annotation, BasicSynchronousClient.image_name)
         print(type(opencv_img))
         cv.imwrite(str(original_path), opencv_img)
-        array_image = Draw_Box_On_Image.draw_box_1(opencv_img, coordinates_vehicles, (0, 0, 255))
-
-        array_image = Draw_Box_On_Image.draw_box_1(opencv_img, coordinates_walkers, (0, 255, 0))
-        cv.imwrite(str(copy_path), array_image)
+        # array_image = Draw_Box_On_Image.draw_box_1(opencv_img, coordinates_vehicles, (0, 0, 255))
+        #
+        # array_image = Draw_Box_On_Image.draw_box_1(opencv_img, coordinates_walkers, (0, 255, 0))
+        # cv.imwrite(str(copy_path), array_image)
         print("saved")
 
-    def create_annotation(self, file_dict, img_frame):
-        file_name = os.path.join(self.jsons_path, '{}.json'.format(img_frame))
+    @staticmethod
+    def create_annotation(file_dict, img_frame):
+        file_name = os.path.join(BasicSynchronousClient.jsons_path, '{}.json'.format(img_frame))
         print('file name: ', file_name)
         with open(file_name, 'w', encoding='utf-8') as j_file:
             j_file.write(json.dumps(file_dict, indent=3, ensure_ascii=False))
 
-    def render(self, display):
+    @staticmethod
+    def render(display):
         """
         Transforms image from camera sensor and blits it to main pygame display.
         """
 
-        if self.image is not None:
-            array = np.frombuffer(self.image.raw_data, dtype=np.dtype("uint8"))
-            array = np.reshape(array, (self.image.height, self.image.width, 4))
+        if BasicSynchronousClient.image is not None:
+            array = np.frombuffer(BasicSynchronousClient.image.raw_data, dtype=np.dtype("uint8"))
+            array = np.reshape(array, (BasicSynchronousClient.image.height, BasicSynchronousClient.image.width, 4))
             array = array[:, :, :3]
             array = array[:, :, ::-1]
             surface = pygame.surfarray.make_surface(array.swapaxes(0, 1))
             display.blit(surface, (0, 0))
+
+    @staticmethod
+    def on_start():
+        try:
+            pygame.init()
+
+            BasicSynchronousClient.client = carla.Client('127.0.0.1', 2000)
+            BasicSynchronousClient.client.set_timeout(2.0)
+            BasicSynchronousClient.world = BasicSynchronousClient.client.get_world()
+
+            BasicSynchronousClient.create_and_spawn_vehicles(10)
+            BasicSynchronousClient.setup_camera()
+
+            BasicSynchronousClient.create_and_spawn_pedestrians(10)
+
+            BasicSynchronousClient.display = pygame.display.set_mode((VIEW_WIDTH, VIEW_HEIGHT), pygame.HWSURFACE | pygame.DOUBLEBUF)
+            pygame_clock = pygame.time.Clock()
+
+            BasicSynchronousClient.set_synchronous_mode(True)
+
+            while True:
+                BasicSynchronousClient.world.tick()
+
+                BasicSynchronousClient.capture = True
+                pygame_clock.tick_busy_loop(20)
+
+                BasicSynchronousClient.render(BasicSynchronousClient.display)
+                vehicles_bbx, vehicles_ids, pedestrians_bbx, pedestrians_ids = ClientSideBoundingBoxes.get_bounding_boxes(
+                    BasicSynchronousClient.vehicles, BasicSynchronousClient.pedestrians, BasicSynchronousClient.camera)
+                vehicles_bbx_cv, vehicle_id_cv, pedestrian_bbx_cv, pedestrian_id_cv = ClientSideBoundingBoxes.get_coords_boxes(
+                    BasicSynchronousClient.display, vehicles_bbx, vehicles_ids, pedestrians_bbx, pedestrians_ids)
+                BasicSynchronousClient.save_img(vehicles_bbx_cv, pedestrian_bbx_cv)
+
+                pygame.display.flip()
+
+                pygame.event.pump()
+                # if self.drive():
+                #    return
+        except KeyboardInterrupt as e:
+            print('ERROR: ', e)
+
+    @staticmethod
+    def on_stop():
+        BasicSynchronousClient.set_synchronous_mode(False)
+        BasicSynchronousClient.camera.destroy()
+        for vehicle in BasicSynchronousClient.vehicles:
+            vehicle.destroy()
+
+        for ai in BasicSynchronousClient.ai_controllers:
+            ai.stop()
+            ai.destroy()
+
+        for pedestrian in BasicSynchronousClient.pedestrians:
+            pedestrian.destroy()
+        print("Destroy actors done!")
+        pygame.quit()
+        print('pygame closed')
 
     def game_loop(self):
         """

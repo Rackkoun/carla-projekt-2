@@ -178,7 +178,7 @@ class Box2DClass(object):
                                     print("\t\t\t\t\"", nnk, "\":", nnv, ",")
                                 print("\t\t\t},")
                             else:
-                                #print("\t\t\t", )
+                                # print("\t\t\t", )
                                 pass
                         print("\t\t],")
                     else:
@@ -187,11 +187,18 @@ class Box2DClass(object):
                 print("\t\"", k, "\":", v, ",")
         print("}")
 
+    @staticmethod
+    def main():
+        print('TESTCV OK')
+
 if __name__ == '__main__':
-    imm, jso = CUSANIDatasetManger.load()
-    im1, im1_name = CUSANIDatasetManger.on_load_img(2)
-    jf = CUSANIDatasetManger.on_load_file(2)
-    Box2DClass.jformat(jf)
+    print('In main main')
+    Box2DClass.main()
+    print('TESTCV OK')
+    # imm, jso = CUSANIDatasetManger.load()
+    # im1, im1_name = CUSANIDatasetManger.on_load_img(2)
+    # jf = CUSANIDatasetManger.on_load_file(2)
+    # Box2DClass.jformat(jf)
     # immm = Box2DClass.identity_all(im1, im1_name, jf)
     # cv.imshow(im1_name, immm)
     # cv.waitKey(0)
