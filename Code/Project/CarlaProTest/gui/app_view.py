@@ -99,6 +99,7 @@ class MainPanel(object):
 
         self.info_entry = tk.Text(self.detected_obj_container, wrap=tk.WORD, height=2, width=30)
         self.info_entry.pack(padx=8, pady=5)
+        self.info_entry.tag_config('msg', foreground='white', background='black')
         # Visualization
         self.container_visualization = ttk.LabelFrame(master=self.frame_visualization, text='visualization panel',
                                                       padding=(3, 3, 3, 3))
@@ -131,6 +132,10 @@ class MainPanel(object):
         self.json_content = tk.Text(self.json_file_container, wrap=tk.WORD, yscrollcommand=scrollbar.set, height=15)
         self.json_content.pack(padx=8, pady=10)
         self.json_content.delete(1.0, tk.END)  # delete the content of text area
+        # configure color formatter
+        self.json_content.tag_config('jkey', foreground='magenta')
+        self.json_content.tag_config('jvalueStr', foreground='green')
+        self.json_content.tag_config('jvalueNbr', foreground='blue')
 
         scrollbar.config(command=self.json_content.yview)
 
@@ -233,8 +238,8 @@ class MainPanel(object):
 
     def on_show_detected_obj(self, v_len, p_len):
         self.info_entry.delete(1.0, tk.END)
-        self.info_entry.insert(tk.INSERT, 'Number of vehicle(s): ' + str(v_len) + '\n')
-        self.info_entry.insert(tk.INSERT, 'Number of pedestrian(s): ' + str(p_len) + '\n')
+        self.info_entry.insert(tk.INSERT, 'Number of vehicle(s): ' + str(v_len) + '\n', 'msg')
+        self.info_entry.insert(tk.INSERT, 'Number of pedestrian(s): ' + str(p_len) + '\n', 'msg')
 
     def on_show_img_original(self, count):
         if self.max_count.get() > 0:
@@ -292,24 +297,31 @@ class MainPanel(object):
             self.json_content.insert(tk.INSERT, '{\n')
             for k, v in content.items():
                 if isinstance(v, dict):
-                    self.json_content.insert(tk.INSERT, '\t' + '\"' + str(k) + '\"' + ':' + '{\n')
+                    self.json_content.insert(tk.INSERT, '\t' + '\"' + str(k) + '\"', 'jkey')
+                    self.json_content.insert(tk.INSERT, ':' + '{\n')
                     for nk, nv in v.items():
                         if isinstance(nv, list):
-                            self.json_content.insert(tk.INSERT, '\t\t' + '\"' + str(nk) + '\":[\n')
+                            self.json_content.insert(tk.INSERT, '\t\t' + '\"' + str(nk) + '\"', 'jkey')
+                            self.json_content.insert(tk.INSERT, ':[\n')
                             for n in nv:
                                 if isinstance(n, dict):
                                     self.json_content.insert(tk.INSERT, '\t\t\t{\n')
                                     for nnk, nnv in n.items():
-                                        self.json_content.insert(tk.INSERT,
-                                                                 '\t\t\t\t' + '\"' + str(nnk) + '\":' + str(nnv) + ',\n')
+                                        self.json_content.insert(tk.INSERT, '\t\t\t\t' + '\"' + str(nnk) + '\"',  'jkey')
+                                        self.json_content.insert(tk.INSERT, ' : ')
+                                        self.json_content.insert(tk.INSERT, str(nnv) + ',\n', 'jvalueNbr')
                                     self.json_content.insert(tk.INSERT, '\t\t\t},\n')
                                 else:
                                     pass
                             self.json_content.insert(tk.INSERT, '\t\t],\n')
                         else:
-                            self.json_content.insert(tk.INSERT, '\t\t\"' + str(nk) + '\":' + str(nv) + ',\n')
+                            self.json_content.insert(tk.INSERT, '\t\t\"' + str(nk) + '\"',  'jkey')
+                            self.json_content.insert(tk.INSERT, ' : ')
+                            self.json_content.insert(tk.INSERT, '\"' + str(nv) + '\",\n', 'jvalueStr')
                 else:
-                    self.json_content.insert(tk.INSERT, '\t\"' + str(k) + '\":' + str(v) + ',\n')
+                    self.json_content.insert(tk.INSERT, '\t\"' + str(k) + '\"', 'jkey')
+                    self.json_content.insert(tk.INSERT, ' : ')
+                    self.json_content.insert(tk.INSERT, '\"' + str(v) + '\",\n', 'jvalueStr')
             self.json_content.insert(tk.INSERT, '\n}')
         else:
             self.json_content.insert(tk.INSERT, 'The dataset is still empty (^ ^)\n')
