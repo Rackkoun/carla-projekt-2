@@ -1,11 +1,13 @@
 #!/usr/bin/python
+import time
 import tkinter as tk
 from tkinter import ttk
-
+from threading import Thread
 from PIL import Image, ImageTk
 
 from model.test_cv import CUSANIDatasetManger, Box2DClass
 from model.client_bounding_boxes_edited import BasicSynchronousClient
+
 
 class MainApp(object):
 
@@ -76,11 +78,11 @@ class MainPanel(object):
         dataset_container = ttk.LabelFrame(container_control, text='Generate images', padding=(3, 3, 3, 3))
         dataset_container.pack(side=tk.BOTTOM, fill=tk.X, expand=tk.YES, padx=5, pady=10)
 
-        self.generate_btn = ttk.Button(dataset_container, text='Start', command=self.on_start_generate)
-        self.generate_btn.pack(side=tk.LEFT, padx=5, pady=10)
+        self.start_btn = ttk.Button(dataset_container, text='Start', command=self.generate)
+        self.start_btn.pack(side=tk.LEFT, padx=5, pady=10)
 
-        self.stop_btn = ttk.Button(dataset_container, text='Stop', command=self.on_stop_generate)
-        self.stop_btn.pack(side=tk.RIGHT, padx=5, pady=10)
+        self.refresh_btn = ttk.Button(dataset_container, text='Refresh', command=self.on_refresh)
+        self.refresh_btn.pack(side=tk.RIGHT, padx=5, pady=10)
 
         action_container = ttk.LabelFrame(container_control, text='Save image(s)', padding=(3, 3, 3, 3))
         action_container.pack(side=tk.BOTTOM, fill=tk.X, expand=tk.YES, padx=5, pady=10)
@@ -106,8 +108,8 @@ class MainPanel(object):
         self.origin_img_lbl = None
         self.copy_img_lbl = None
 
+        self.event_ = None
         # VisualizationPanel.MAX_COUNT = max_count
-        print('len of pic: ', self.max_count.get())
         # ControlPanel.MAX_COUNT = VisualizationPanel.MAX_COUNT
 
         self.json_file_container = ttk.LabelFrame(master=self.container_visualization, text='JSON-File content',
@@ -142,20 +144,16 @@ class MainPanel(object):
         self.on_show_img_original(self.count.get())
         self.on_show_img_copy(self.count.get())
         self.on_show_json_content(self.count.get())
-        # self.on_show_detected_obj()
 
         if self.count.get() - 1 < 0:
-            print("got the first Image")
             self.prev_btn.config(state="disabled")
 
         if self.count.get() + 1 > self.max_count.get():
-            print("got the last Image")
             self.next_btn.config(state="disabled")
 
     def on_next_clicked(self):
         if self.count.get() < self.max_count.get():
             if self.count.get() + 1 >= self.max_count.get():
-                print("got the last Image")
                 self.next_btn.config(state="disabled")
             self.count.set(self.count.get() + 1)
 
@@ -194,7 +192,6 @@ class MainPanel(object):
 
     def _on_update_text(self):
         self.lbl_var.set('{}/{}'.format(self.count.get() + 1, self.max_count.get() + 1))
-        print('label updated: {}/{}'.format(self.count.get() + 1, self.max_count.get() + 1))
 
     def on_enter_pressed(self, event):
         """
@@ -211,7 +208,7 @@ class MainPanel(object):
         self._on_update_text()
 
     def on_save(self):
-        print('SAVE PRESSED')
+
         count = self.count.get()
         img_arr, img_name = CUSANIDatasetManger.on_load_img(count)
         img_info = CUSANIDatasetManger.on_load_file(count)
@@ -231,7 +228,8 @@ class MainPanel(object):
 
             count += 1
 
-        print('Finish')
+        print('Finish!')
+        print(count, ' edited image(s) successfully saved')
 
     def on_show_detected_obj(self, v_len, p_len):
         self.info_entry.delete(1.0, tk.END)
@@ -268,6 +266,8 @@ class MainPanel(object):
         self.copy_img_lbl.pack(padx=8, pady=8)
 
     def on_show_json_content(self, count):
+        # load current json file in the directory and display its content
+        # in the Text field
         content = CUSANIDatasetManger.on_load_file(count)
 
         # delete the old content and put the new one
@@ -295,19 +295,14 @@ class MainPanel(object):
                 self.json_content.insert(tk.INSERT, '\t\"' + str(k) + '\":' + str(v) + ',\n')
         self.json_content.insert(tk.INSERT, '\n}')
 
-    # def exec_on_thread(self):
-    #     t = Thread(target=self.on_generate)
-    #     t.start()
-    #     time.sleep(3)
-    #     if t.is_alive():
-    #         t.join()
-    #         print(t.is_alive())
+    def generate(self):
+        BasicSynchronousClient.generate()
 
-    def on_start_generate(self):
-        BasicSynchronousClient.on_start()
-
-    def on_stop_generate(self):
-        BasicSynchronousClient.on_stop()
+    def on_refresh(self):
+        _, json_lst = CUSANIDatasetManger.load()
+        self.max_count.set(len(json_lst) - 1)
+        self._on_update_text()
+        print('refreshed!')
 
 
 if __name__ == '__main__':

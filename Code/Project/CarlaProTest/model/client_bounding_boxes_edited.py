@@ -7,16 +7,11 @@
 # modified by Ruphus, Feb 24, 2020 19:00
 
 """
-An example of client-side bounding boxes with basic car controls.
+'CUSANI 2.0'
+example to use CARLA-Simulator as custom dataset to create synthetically images and annotations (json-file).
 
-Controls:
-
-    W            : throttle
-    S            : brake
-    AD           : steer
-    Space        : hand-brake
-
-    ESC          : quit
+The default time (in millisecond) to save images and file is set to 5000.
+To stop generating images and files only click in the pygame-window (left mouse-click).
 """
 
 # ==============================================================================
@@ -51,13 +46,6 @@ import json
 
 try:
     import pygame
-    from pygame.locals import K_ESCAPE
-    from pygame.locals import K_SPACE
-    from pygame.locals import K_q
-    from pygame.locals import K_d
-    from pygame.locals import K_s
-    from pygame.locals import K_z
-    from pygame.locals import K_f
 except ImportError:
     raise RuntimeError('cannot import pygame, make sure pygame package is installed')
 
@@ -71,6 +59,8 @@ VIEW_HEIGHT = 1080 // 2
 VIEW_FOV = 90
 
 BB_COLOR = (248, 64, 24)
+
+TIME_TICK = 5000  # time to take screenshot with the camera (in millis) 5000 --> 5 sec
 
 
 # ==============================================================================
@@ -90,9 +80,6 @@ class Draw_Box_On_Image:
             p1 = (point[0], point[1])
             p2 = (point[2], point[3])
             border = 1
-            print('P1: ', p1)
-            print('P2": ', p2)
-            print(type(new_image))
             new_image = cv.rectangle(new_image, p1, p2, color, border)
 
         return new_image
@@ -143,7 +130,6 @@ class ClientSideBoundingBoxes(object):
 
         p_bounding_boxes = p_filter_bbx
         p_objects_ids = p_filter_id
-        print("BOX SIZE: {} ID SIZE: {}".format(len(v_bounding_boxes), len(v_objects_ids)))
 
         return v_bounding_boxes, v_objects_ids, p_bounding_boxes, p_objects_ids
 
@@ -165,14 +151,13 @@ class ClientSideBoundingBoxes(object):
         for v_bbox, v_id in zip(v_bounding_boxes, v_actor_ids):
             points = [(int(v_bbox[i, 0]), int(v_bbox[i, 1])) for i in range(8)]
 
-            print(points)
             min_x = points[0][0]
             min_y = points[0][1]
             max_x = points[0][0]
             max_y = points[0][1]
             for point in points:
                 if min_x >= 0:
-                    if point[0] >= 0 and point[0] <= min_x:
+                    if 0 <= point[0] <= min_x:
                         min_x = point[0]
                 else:
                     if point[0] >= 0:
@@ -186,13 +171,12 @@ class ClientSideBoundingBoxes(object):
                 if point[1] >= max_y:
                     max_y = point[1]
             if min_x < 0 or min_x == max_x:
-                print("unable to find extrema values:", min_x, max_x, min_y, max_y)
+                pass
             else:
-                print("rectangle points:", min_x, max_x, min_y, max_y, "   id: ", v_id)
                 point1 = (min_x, min_y)  # top left
-                point2 = (min_x, max_y)  # bottom left
+                # point2 = (min_x, max_y)  # bottom left
                 point3 = (max_x, max_y)  # bottom right
-                point4 = (max_x, min_y)  # top right
+                # point4 = (max_x, min_y)  # top right
                 v_opencv_box_coords.append((point1 + point3))
                 v_id_box.append(v_id)
 
@@ -200,14 +184,13 @@ class ClientSideBoundingBoxes(object):
         for p_bbox, p_id in zip(p_bounding_boxes, p_actor_ids):
             points = [(int(p_bbox[i, 0]), int(p_bbox[i, 1])) for i in range(8)]
 
-            print(points)
             min_x = points[0][0]
             min_y = points[0][1]
             max_x = points[0][0]
             max_y = points[0][1]
             for point in points:
                 if min_x >= 0:
-                    if point[0] >= 0 and point[0] <= min_x:
+                    if 0 <= point[0] <= min_x:
                         min_x = point[0]
                 else:
                     if point[0] >= 0:
@@ -221,13 +204,12 @@ class ClientSideBoundingBoxes(object):
                 if point[1] >= max_y:
                     max_y = point[1]
             if min_x < 0 or min_x == max_x:
-                print("unable to find extrema values:", min_x, max_x, min_y, max_y)
+                pass
             else:
-                print("rectangle points:", min_x, max_x, min_y, max_y, "   id: ", p_id)
                 point1 = (min_x, min_y)  # top left
-                point2 = (min_x, max_y)  # bottom left
+                # point2 = (min_x, max_y)  # bottom left
                 point3 = (max_x, max_y)  # bottom right
-                point4 = (max_x, min_y)  # top right
+                # point4 = (max_x, min_y)  # top right
 
                 p_opencv_box_coords.append((point1 + point3))
                 p_id_box.append(p_id)
@@ -341,6 +323,7 @@ class BasicSynchronousClient(object):
 
     def __init__(self):
         print('Carla client started!')
+
     client = None
     world = None
     camera = None
@@ -353,22 +336,21 @@ class BasicSynchronousClient(object):
     image = None
     capture = True
     image_name = None
-
     original_img_path = Path('../res/img/originals')
     edited_img_path = Path('../res/img/edited')
     jsons_path = Path('../res/img/jsons')
 
     custom_annotation = {
-            'image_name': '',
-            'object_1': {
-                'class': 'vehicle',
-                'identify': []
-            },
-            'object_2': {
-                'class': 'pedestrian',
-                'identify': []
-            }
+        'image_name': '',
+        'object_1': {
+            'class': 'vehicle',
+            'identify': []
+        },
+        'object_2': {
+            'class': 'pedestrian',
+            'identify': []
         }
+    }
 
     @staticmethod
     def camera_blueprint():
@@ -451,7 +433,8 @@ class BasicSynchronousClient(object):
         # attach ai-controller to each walker
         pedestrians_controller_bp = BasicSynchronousClient.world.get_blueprint_library().find('controller.ai.walker')
         for w in range(len(BasicSynchronousClient.pedestrians)):
-            controller = BasicSynchronousClient.world.spawn_actor(pedestrians_controller_bp, carla.Transform(), BasicSynchronousClient.pedestrians[w])
+            controller = BasicSynchronousClient.world.spawn_actor(pedestrians_controller_bp, carla.Transform(),
+                                                                  BasicSynchronousClient.pedestrians[w])
             BasicSynchronousClient.ai_controllers.append(controller)
 
         # put all ids (walkers and controllers) together in the same list to remove them from later from the world
@@ -459,8 +442,7 @@ class BasicSynchronousClient(object):
             pedestrians_ids.append(BasicSynchronousClient.pedestrians[i].id)
             pedestrians_ids.append(BasicSynchronousClient.ai_controllers[i].id)
 
-        # retrieve all elements in the world and places them in a list
-        # all_pedestrians = []
+        # retrieve all elements in the world and save them in a list
         all_pedestrians = BasicSynchronousClient.world.get_actors(pedestrians_ids)
 
         # wait server confirmation
@@ -471,7 +453,7 @@ class BasicSynchronousClient(object):
             ai.start()
             ai.go_to_location(BasicSynchronousClient.world.get_random_location_from_navigation())
             ai.set_max_speed(1 + random.random())
-        print("Len of pedestrians list: ", len(all_pedestrians))
+        print("Number of pedestrians added: ", len(all_pedestrians))
 
     @staticmethod
     def setup_camera():
@@ -482,7 +464,8 @@ class BasicSynchronousClient(object):
 
         camera_transform = carla.Transform(carla.Location(x=-5.5, z=2.8), carla.Rotation(pitch=-15))
         # attach the camera to the first vehicle
-        BasicSynchronousClient.camera = BasicSynchronousClient.world.spawn_actor(BasicSynchronousClient.camera_blueprint(), camera_transform, attach_to=BasicSynchronousClient.vehicles[0])
+        BasicSynchronousClient.camera = BasicSynchronousClient.world.spawn_actor(
+            BasicSynchronousClient.camera_blueprint(), camera_transform, attach_to=BasicSynchronousClient.vehicles[0])
         weak_self = weakref.ref(BasicSynchronousClient)
         BasicSynchronousClient.camera.listen(lambda image: weak_self().set_image(weak_self, image))
 
@@ -490,18 +473,8 @@ class BasicSynchronousClient(object):
         calibration[0, 2] = VIEW_WIDTH / 2.0
         calibration[1, 2] = VIEW_HEIGHT / 2.0
         calibration[0, 0] = calibration[1, 1] = VIEW_WIDTH / (2.0 * np.tan(VIEW_FOV * np.pi / 360.0))
-        print('CALIB: ', calibration)
-        BasicSynchronousClient.camera.calibration = calibration
 
-    def drive(self):
-        """
-        Will return True If ESCAPE is hit, otherwise False to end main loop.
-        """
-        print("############## IMG NAME IN DRIVE METH: ", str(self.image_name))
-        keys = pygame.key.get_pressed()
-        if keys[K_ESCAPE]:
-            return True
-        return False
+        BasicSynchronousClient.camera.calibration = calibration
 
     @staticmethod
     def set_image(weak_self, img):
@@ -532,21 +505,18 @@ class BasicSynchronousClient(object):
         # reverse the image color format for opencv
         opencv_img = cv.cvtColor(img_array, cv.COLOR_RGB2BGR)
 
-        name_edited = str(BasicSynchronousClient.image_name) + '_edited' + '.png'
+        # name_edited = str(BasicSynchronousClient.image_name) + '_edited' + '.png'
         name = str(BasicSynchronousClient.image_name) + '.png'
 
         original_path = BasicSynchronousClient.original_img_path / name
-        copy_path = BasicSynchronousClient.edited_img_path / name_edited
+        # copy_path = BasicSynchronousClient.edited_img_path / name_edited
 
         v_annotation = []
         p_annotation = []
-
-        print(coordinates_vehicles)
         for p in coordinates_vehicles:
             v_annotation_dict = {'P0': p[0], 'P1': p[1], 'P2': p[2], 'P3': p[3]}
             v_annotation.append(v_annotation_dict)
 
-        print(coordinates_walkers)
         for p in coordinates_walkers:
             p_annotation_dict = {'P0': p[0], 'P1': p[1], 'P2': p[2], 'P3': p[3]}
             p_annotation.append(p_annotation_dict)
@@ -554,19 +524,15 @@ class BasicSynchronousClient(object):
         BasicSynchronousClient.custom_annotation['image_name'] = str(BasicSynchronousClient.image_name) + '.png'
         BasicSynchronousClient.custom_annotation['object_1']['identify'] = v_annotation
         BasicSynchronousClient.custom_annotation['object_2']['identify'] = p_annotation
-        BasicSynchronousClient.create_annotation(BasicSynchronousClient.custom_annotation, BasicSynchronousClient.image_name)
-        print(type(opencv_img))
+        BasicSynchronousClient.create_annotation(BasicSynchronousClient.custom_annotation,
+                                                 BasicSynchronousClient.image_name)
+
         cv.imwrite(str(original_path), opencv_img)
-        # array_image = Draw_Box_On_Image.draw_box_1(opencv_img, coordinates_vehicles, (0, 0, 255))
-        #
-        # array_image = Draw_Box_On_Image.draw_box_1(opencv_img, coordinates_walkers, (0, 255, 0))
-        # cv.imwrite(str(copy_path), array_image)
         print("saved")
 
     @staticmethod
     def create_annotation(file_dict, img_frame):
         file_name = os.path.join(BasicSynchronousClient.jsons_path, '{}.json'.format(img_frame))
-        print('file name: ', file_name)
         with open(file_name, 'w', encoding='utf-8') as j_file:
             j_file.write(json.dumps(file_dict, indent=3, ensure_ascii=False))
 
@@ -585,7 +551,13 @@ class BasicSynchronousClient(object):
             display.blit(surface, (0, 0))
 
     @staticmethod
-    def on_start():
+    def generate():
+        """
+        Method to generate images and annotations.
+        To leave the loop inside this method, the opening pygame window
+        must be clicked with the left mouse-click
+        """
+
         try:
             pygame.init()
 
@@ -598,123 +570,55 @@ class BasicSynchronousClient(object):
 
             BasicSynchronousClient.create_and_spawn_pedestrians(10)
 
-            BasicSynchronousClient.display = pygame.display.set_mode((VIEW_WIDTH, VIEW_HEIGHT), pygame.HWSURFACE | pygame.DOUBLEBUF)
+            BasicSynchronousClient.display = pygame.display.set_mode((VIEW_WIDTH, VIEW_HEIGHT),
+                                                                     pygame.HWSURFACE | pygame.DOUBLEBUF)
             pygame_clock = pygame.time.Clock()
-
+            elepsed_time = 0
             BasicSynchronousClient.set_synchronous_mode(True)
-
-            while True:
+            running = True
+            while running:
                 BasicSynchronousClient.world.tick()
 
                 BasicSynchronousClient.capture = True
-                pygame_clock.tick_busy_loop(20)
+                # frame rate 20 screenshots per seconds
+                time_tick = pygame_clock.tick_busy_loop(20)
 
                 BasicSynchronousClient.render(BasicSynchronousClient.display)
-                vehicles_bbx, vehicles_ids, pedestrians_bbx, pedestrians_ids = ClientSideBoundingBoxes.get_bounding_boxes(
-                    BasicSynchronousClient.vehicles, BasicSynchronousClient.pedestrians, BasicSynchronousClient.camera)
-                vehicles_bbx_cv, vehicle_id_cv, pedestrian_bbx_cv, pedestrian_id_cv = ClientSideBoundingBoxes.get_coords_boxes(
-                    BasicSynchronousClient.display, vehicles_bbx, vehicles_ids, pedestrians_bbx, pedestrians_ids)
-                BasicSynchronousClient.save_img(vehicles_bbx_cv, pedestrian_bbx_cv)
 
+                # increment the time to save images every 5 secs
+                elepsed_time += time_tick
+                if elepsed_time > TIME_TICK:
+                    print('taking a screenshot...')
+                    vehicles_bbx, vehicles_ids, pedestrians_bbx, pedestrians_ids = ClientSideBoundingBoxes.get_bounding_boxes(
+                        BasicSynchronousClient.vehicles, BasicSynchronousClient.pedestrians,
+                        BasicSynchronousClient.camera)
+                    vehicles_bbx_cv, vehicle_id_cv, pedestrian_bbx_cv, pedestrian_id_cv = ClientSideBoundingBoxes.get_coords_boxes(
+                        BasicSynchronousClient.display, vehicles_bbx, vehicles_ids, pedestrians_bbx, pedestrians_ids)
+                    BasicSynchronousClient.save_img(vehicles_bbx_cv, pedestrian_bbx_cv)
+                    print('------- CLOCK Elapsed: ', elepsed_time / 1000, ' sec')
+                    elepsed_time = 0  # reinitialize count
                 pygame.display.flip()
 
                 pygame.event.pump()
-                # if self.drive():
-                #    return
-        except KeyboardInterrupt as e:
-            print('ERROR: ', e)
 
-    @staticmethod
-    def on_stop():
-        BasicSynchronousClient.set_synchronous_mode(False)
-        BasicSynchronousClient.camera.destroy()
-        for vehicle in BasicSynchronousClient.vehicles:
-            vehicle.destroy()
-
-        for ai in BasicSynchronousClient.ai_controllers:
-            ai.stop()
-            ai.destroy()
-
-        for pedestrian in BasicSynchronousClient.pedestrians:
-            pedestrian.destroy()
-        print("Destroy actors done!")
-        pygame.quit()
-        print('pygame closed')
-
-    def game_loop(self):
-        """
-        Main program loop.
-        """
-
-        try:
-            pygame.init()
-
-            self.client = carla.Client('127.0.0.1', 2000)
-            self.client.set_timeout(2.0)
-            self.world = self.client.get_world()
-
-            self.create_and_spawn_vehicles(10)
-            self.setup_camera()
-
-            self.create_and_spawn_pedestrians(10)
-
-            self.display = pygame.display.set_mode((VIEW_WIDTH, VIEW_HEIGHT), pygame.HWSURFACE | pygame.DOUBLEBUF)
-            pygame_clock = pygame.time.Clock()
-
-            self.set_synchronous_mode(True)
-
-            while True:
-                self.world.tick()
-
-                self.capture = True
-                pygame_clock.tick_busy_loop(20)
-
-                self.render(self.display)
-                vehicles_bbx, vehicles_ids, pedestrians_bbx, pedestrians_ids = ClientSideBoundingBoxes.get_bounding_boxes(
-                    self.vehicles, self.pedestrians, self.camera)
-                vehicles_bbx_cv, vehicle_id_cv, pedestrian_bbx_cv, pedestrian_id_cv = ClientSideBoundingBoxes.get_coords_boxes(
-                    self.display, vehicles_bbx, vehicles_ids, pedestrians_bbx, pedestrians_ids)
-                self.save_img(vehicles_bbx_cv, pedestrian_bbx_cv)
-
-                pygame.display.flip()
-
-                pygame.event.pump()
-                if self.drive():
-                    return
+                # close pygame window on mouse event in the pygame display
+                mouse_events = pygame.event.get()
+                for events in mouse_events:
+                    if events.type == pygame.MOUSEBUTTONDOWN:
+                        running = False
 
         finally:
-            self.set_synchronous_mode(False)
-            self.camera.destroy()
-            # self.car.destroy()
-            for vehicle in self.vehicles:
+            BasicSynchronousClient.set_synchronous_mode(False)
+            BasicSynchronousClient.camera.destroy()
+            for vehicle in BasicSynchronousClient.vehicles:
                 vehicle.destroy()
 
-            for ai in self.ai_controllers:
+            for ai in BasicSynchronousClient.ai_controllers:
                 ai.stop()
                 ai.destroy()
 
-            for pedestrian in self.pedestrians:
+            for pedestrian in BasicSynchronousClient.pedestrians:
                 pedestrian.destroy()
             print("Destroy actors done!")
+            pygame.display.quit()
             pygame.quit()
-
-
-# ==============================================================================
-# -- main() --------------------------------------------------------------------
-# ==============================================================================
-
-
-def main():
-    """
-    Initializes the client-side bounding box demo.
-    """
-
-    try:
-        client = BasicSynchronousClient()
-        client.game_loop()
-    finally:
-        print('EXIT')
-
-
-if __name__ == '__main__':
-    main()

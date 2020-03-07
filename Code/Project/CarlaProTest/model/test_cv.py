@@ -24,13 +24,13 @@ class CUSANIDatasetManger(object):
     @staticmethod
     def load():
         CUSANIDatasetManger.IMG_LST, CUSANIDatasetManger.JSON_LST = CUSANIDatasetManger._load_dataset()
+        print('done!')
         return CUSANIDatasetManger.IMG_LST, CUSANIDatasetManger.JSON_LST
 
     @staticmethod
     def on_load_img(idx):
         img = cv.imread('{}'.format(CUSANIDatasetManger.original_img_path / CUSANIDatasetManger.IMG_LST[idx]))
-        print(("PATH"))
-        print('{}'.format(CUSANIDatasetManger.original_img_path / CUSANIDatasetManger.IMG_LST[idx]))
+        print("loading generated images and files...")
         return img, str(CUSANIDatasetManger.IMG_LST[idx])
 
     @staticmethod
@@ -45,7 +45,6 @@ class CUSANIDatasetManger(object):
         OpenCV read Image color in Blue, Green, Red; the color priority must be rearrange
         (split) before display it with oder Image-library as PIL or ImageTK
         """
-        print('re-arrange image...')
         blue, green, red = cv.split(arr_img)
         rearranged_img = cv.merge((red, green, blue))
         return rearranged_img
@@ -121,96 +120,14 @@ class Box2DClass(object):
     def identity_all(ima, dico):
         # draw rectangle
         vehicles, pedestrian = Box2DClass.get_objs(dico)
-        print(('identify vehicles...'))
         ima, v_len = Box2DClass.identity_vehicles(ima, vehicles)
-        print('identify pedes..')
         ima, p_len = Box2DClass.identity_pedestrians(ima, pedestrian)
 
         return ima, v_len, p_len
-
-    @staticmethod
-    def open_img(im):
-        im_array = cv.imread(im)
-        return im_array
-
-    @staticmethod
-    def show_img(ima, info):
-        # draw rectangle
-        for obj in info:
-            print(obj)
-            box_img = cv.rectangle(
-                ima,
-                (obj['P0'], obj['P1']),
-                (obj['P2'], obj['P3']),
-                (0, 255, 0),
-                2
-            )
-            cv.putText(box_img,
-                       str('Vehicle'),
-                       (obj['P0'], obj['P1'] - 10),
-                       cv.FONT_HERSHEY_PLAIN,
-                       0.8,
-                       (255, 255, 255))
-        return ima
 
     @staticmethod
     def on_saving_copy(img, img_name):
         path = Path('../res/img/testcv')
         img_n = path / 'copy-{}'.format(img_name)
         cv.imwrite(str(img_n), img)
-        print('Image saved!')
-
-    @staticmethod
-    def jformat(dico):
-        # print(dico)
-        print('{')
-        for k, v in dico.items():
-            if isinstance(v, dict):
-                print('\t\"', k, '\":{')
-                for nk, nv in v.items():
-                    if isinstance(nv, list):
-                        print("\t\t\"", nk, "\":[ ")
-                        for n in nv:
-                            # print(n)
-                            if isinstance(n, dict):
-                                print("\t\t\t{")
-                                for nnk, nnv in n.items():
-                                    print("\t\t\t\t\"", nnk, "\":", nnv, ",")
-                                print("\t\t\t},")
-                            else:
-                                # print("\t\t\t", )
-                                pass
-                        print("\t\t],")
-                    else:
-                        print("\t\t\"", nk, "\":", nv, ",")
-            else:
-                print("\t\"", k, "\":", v, ",")
-        print("}")
-
-    @staticmethod
-    def main():
-        print('TESTCV OK')
-
-if __name__ == '__main__':
-    print('In main main')
-    Box2DClass.main()
-    print('TESTCV OK')
-    # imm, jso = CUSANIDatasetManger.load()
-    # im1, im1_name = CUSANIDatasetManger.on_load_img(2)
-    # jf = CUSANIDatasetManger.on_load_file(2)
-    # Box2DClass.jformat(jf)
-    # immm = Box2DClass.identity_all(im1, im1_name, jf)
-    # cv.imshow(im1_name, immm)
-    # cv.waitKey(0)
-    # cv.destroyAllWindows()
-    # print(jf)
-    # imm = CUSANICV.show_img(im1, im1_name, cars_dic)
-    # CUSANICV.on_saving_copy(imm, im1_name)
-    # content = on_load_file('img/jsons/445.json')
-    # print(content)
-    # content_array = get_obj(content)
-
-    # im_arr = open_img('img/originals/445.png')
-    # print(type(im_arr))
-    # print(content_array[2])
-    # show_img(im_arr, 'copy-img', content['object_1']['identify'])
+        print('Edited ', str(img_name), 'Image saved!')
