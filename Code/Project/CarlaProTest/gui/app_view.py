@@ -14,7 +14,7 @@ class MainApp(object):
     def __init__(self):
         print("Main class")
         self.main_window = tk.Tk()
-        self.main_window.title("Project 2: WiSo19/20")
+        self.main_window.title("CUSANI 2.0")
 
         im_lst, json_lst = CUSANIDatasetManger.load()
         self.main_panel = MainPanel(self.main_window, len(im_lst))
@@ -237,63 +237,82 @@ class MainPanel(object):
         self.info_entry.insert(tk.INSERT, 'Number of pedestrian(s): ' + str(p_len) + '\n')
 
     def on_show_img_original(self, count):
-        array_img, img_name = CUSANIDatasetManger.on_load_img(count)
-        re_arrange = CUSANIDatasetManger.rearrang_img_for_gui(array_img)
-        origin_img = Image.fromarray(re_arrange)
+        if self.max_count.get() > 0:
+            array_img, img_name = CUSANIDatasetManger.on_load_img(count)
+            re_arrange = CUSANIDatasetManger.rearrang_img_for_gui(array_img)
+            origin_img = Image.fromarray(re_arrange)
 
-        # resize the image to diplay on the GUI
-        origin_img.thumbnail((620, 640), Image.ANTIALIAS)
-        img_lbl = ImageTk.PhotoImage(image=origin_img)
-        self.origin_img_lbl.configure(image=img_lbl, anchor=tk.NW)
-        self.origin_img_lbl.image = img_lbl
-        self.origin_img_lbl.pack(padx=8, pady=8)
+            # resize the image to diplay on the GUI
+            origin_img.thumbnail((620, 640), Image.ANTIALIAS)
+            img_lbl = ImageTk.PhotoImage(image=origin_img)
+            self.origin_img_lbl.configure(image=img_lbl, anchor=tk.NW)
+            self.origin_img_lbl.image = img_lbl
+            self.origin_img_lbl.pack(padx=8, pady=8)
+        else:
+            tmp_img = Image.open('../res/img/empty-dataset-cusani.png')
+            tmp_img.thumbnail((620, 640), Image.ANTIALIAS)
+            tmp_img_tk = ImageTk.PhotoImage(image=tmp_img)
+            self.origin_img_lbl.configure(image=tmp_img_tk, anchor=tk.NW)
+            self.origin_img_lbl.image = tmp_img_tk
+            self.origin_img_lbl.pack(padx=8, pady=8)
 
     def on_show_img_copy(self, count):
-        img_arr, img_name = CUSANIDatasetManger.on_load_img(count)
-        img_info = CUSANIDatasetManger.on_load_file(count)
+        if self.max_count.get() > 0:
+            img_arr, img_name = CUSANIDatasetManger.on_load_img(count)
+            img_info = CUSANIDatasetManger.on_load_file(count)
 
-        box_img_arr, v_lst, p_lst = Box2DClass.identity_all(img_arr, img_info)
-        box_re_arranged = CUSANIDatasetManger.rearrang_img_for_gui(box_img_arr)
-        box_copy_img = Image.fromarray(box_re_arranged)
+            box_img_arr, v_lst, p_lst = Box2DClass.identity_all(img_arr, img_info)
+            box_re_arranged = CUSANIDatasetManger.rearrang_img_for_gui(box_img_arr)
+            box_copy_img = Image.fromarray(box_re_arranged)
 
-        self.on_show_detected_obj(v_lst, p_lst)
+            self.on_show_detected_obj(v_lst, p_lst)
 
-        # resize the image to diplay on the GUI
-        box_copy_img.thumbnail((620, 640), Image.ANTIALIAS)
-        img_lbl = ImageTk.PhotoImage(image=box_copy_img)
-        self.copy_img_lbl.configure(image=img_lbl, anchor=tk.NW)
-        self.copy_img_lbl.image = img_lbl
-        self.copy_img_lbl.pack(padx=8, pady=8)
+            # resize the image to diplay on the GUI
+            box_copy_img.thumbnail((620, 640), Image.ANTIALIAS)
+            img_lbl = ImageTk.PhotoImage(image=box_copy_img)
+            self.copy_img_lbl.configure(image=img_lbl, anchor=tk.NW)
+            self.copy_img_lbl.image = img_lbl
+            self.copy_img_lbl.pack(padx=8, pady=8)
+        else:
+            tmp_img = Image.open('../res/img/empty-dataset-cusani.png')
+            tmp_img.thumbnail((620, 640), Image.ANTIALIAS)
+            tmp_img_tk = ImageTk.PhotoImage(image=tmp_img)
+            self.copy_img_lbl.configure(image=tmp_img_tk, anchor=tk.NW)
+            self.copy_img_lbl.image = tmp_img_tk
+            self.copy_img_lbl.pack(padx=8, pady=8)
 
     def on_show_json_content(self, count):
-        # load current json file in the directory and display its content
-        # in the Text field
-        content = CUSANIDatasetManger.on_load_file(count)
+        if self.max_count.get() > 0:
+            # load current json file in the directory and display its content
+            # in the Text field
+            content = CUSANIDatasetManger.on_load_file(count)
 
-        # delete the old content and put the new one
-        self.json_content.delete(1.0, tk.END)
-        self.json_content.insert(tk.INSERT, '{\n')
-        for k, v in content.items():
-            if isinstance(v, dict):
-                self.json_content.insert(tk.INSERT, '\t' + '\"' + str(k) + '\"' + ':' + '{\n')
-                for nk, nv in v.items():
-                    if isinstance(nv, list):
-                        self.json_content.insert(tk.INSERT, '\t\t' + '\"' + str(nk) + '\":[\n')
-                        for n in nv:
-                            if isinstance(n, dict):
-                                self.json_content.insert(tk.INSERT, '\t\t\t{\n')
-                                for nnk, nnv in n.items():
-                                    self.json_content.insert(tk.INSERT,
-                                                             '\t\t\t\t' + '\"' + str(nnk) + '\":' + str(nnv) + ',\n')
-                                self.json_content.insert(tk.INSERT, '\t\t\t},\n')
-                            else:
-                                pass
-                        self.json_content.insert(tk.INSERT, '\t\t],\n')
-                    else:
-                        self.json_content.insert(tk.INSERT, '\t\t\"' + str(nk) + '\":' + str(nv) + ',\n')
-            else:
-                self.json_content.insert(tk.INSERT, '\t\"' + str(k) + '\":' + str(v) + ',\n')
-        self.json_content.insert(tk.INSERT, '\n}')
+            # delete the old content and put the new one
+            self.json_content.delete(1.0, tk.END)
+            self.json_content.insert(tk.INSERT, '{\n')
+            for k, v in content.items():
+                if isinstance(v, dict):
+                    self.json_content.insert(tk.INSERT, '\t' + '\"' + str(k) + '\"' + ':' + '{\n')
+                    for nk, nv in v.items():
+                        if isinstance(nv, list):
+                            self.json_content.insert(tk.INSERT, '\t\t' + '\"' + str(nk) + '\":[\n')
+                            for n in nv:
+                                if isinstance(n, dict):
+                                    self.json_content.insert(tk.INSERT, '\t\t\t{\n')
+                                    for nnk, nnv in n.items():
+                                        self.json_content.insert(tk.INSERT,
+                                                                 '\t\t\t\t' + '\"' + str(nnk) + '\":' + str(nnv) + ',\n')
+                                    self.json_content.insert(tk.INSERT, '\t\t\t},\n')
+                                else:
+                                    pass
+                            self.json_content.insert(tk.INSERT, '\t\t],\n')
+                        else:
+                            self.json_content.insert(tk.INSERT, '\t\t\"' + str(nk) + '\":' + str(nv) + ',\n')
+                else:
+                    self.json_content.insert(tk.INSERT, '\t\"' + str(k) + '\":' + str(v) + ',\n')
+            self.json_content.insert(tk.INSERT, '\n}')
+        else:
+            self.json_content.insert(tk.INSERT, 'The dataset is still empty (^ ^)\n')
 
     def generate(self):
         BasicSynchronousClient.generate()
@@ -301,6 +320,11 @@ class MainPanel(object):
     def on_refresh(self):
         _, json_lst = CUSANIDatasetManger.load()
         self.max_count.set(len(json_lst) - 1)
+        if self.max_count.get() > 1:
+            self.next_btn.config(state="normal")
+        self.on_show_img_original(self.count.get())
+        self.on_show_img_copy(self.count.get())
+        self.on_show_json_content(self.count.get())
         self._on_update_text()
         print('refreshed!')
 

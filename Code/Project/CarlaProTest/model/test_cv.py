@@ -23,6 +23,7 @@ class CUSANIDatasetManger(object):
 
     @staticmethod
     def load():
+        print("loading generated images and files...")
         CUSANIDatasetManger.IMG_LST, CUSANIDatasetManger.JSON_LST = CUSANIDatasetManger._load_dataset()
         print('done!')
         return CUSANIDatasetManger.IMG_LST, CUSANIDatasetManger.JSON_LST
@@ -30,7 +31,7 @@ class CUSANIDatasetManger(object):
     @staticmethod
     def on_load_img(idx):
         img = cv.imread('{}'.format(CUSANIDatasetManger.original_img_path / CUSANIDatasetManger.IMG_LST[idx]))
-        print("loading generated images and files...")
+
         return img, str(CUSANIDatasetManger.IMG_LST[idx])
 
     @staticmethod
