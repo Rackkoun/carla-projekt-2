@@ -10,7 +10,7 @@ On the above image, the corresponding original Image and JSON file are shown bel
 <img src="https://gitlab.hs-ruhrwest.de/btrutcha/carla-projekt-2/-/raw/LZ/Code/Project/CarlaProTest/original_images.png" alt="drawing" width="400" />
 <img src="https://gitlab.hs-ruhrwest.de/btrutcha/carla-projekt-2/-/raw/LZ/Code/Project/CarlaProTest/json_images.png" alt="drawing" width="400" />
 
-#### __CUSANI INSTALLATION__
+#### <u>CUSANI INSTALLATION </u>
 
 To run CUSANI, make sure that you have Python (3 or later) installed.
 
@@ -26,7 +26,7 @@ The Software was deployed on the following system configuration:
     - [PIL](https://pypi.org/project/Pillow/) (tested on version 5.4.1)
     - [OPenCV](https://opencv.org/releases/) (tested on version 4.20.32)
 
-#### __HOW TO RUN CUSANI__
+#### <u> HOW TO RUN CUSANI </u>
 
 Follow the steps below to run CUSANI:
 
@@ -52,7 +52,7 @@ Follow the steps below to run CUSANI:
     **Menu Bar -> Run -> Start**
 
 
-#### __VISUALISATION__
+#### <u> VISUALISATION </u>
 
 - Select wich folder Content are going to be shown on the list by checking **"Original"** and/or **"Treated"**
 
