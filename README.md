@@ -10,7 +10,7 @@ On the above image, the corresponding original Image and JSON file are shown bel
 <img src="https://gitlab.hs-ruhrwest.de/btrutcha/carla-projekt-2/-/raw/LZ/Code/Project/CarlaProTest/original_images.png" alt="drawing" width="400" />
 <img src="https://gitlab.hs-ruhrwest.de/btrutcha/carla-projekt-2/-/raw/LZ/Code/Project/CarlaProTest/json_images.png" alt="drawing" width="400" />
 
-#### <u>CUSANI INSTALLATION </u>
+#### <span style="text-decoration: underline"> CUSANI INSTALLATION </span>
 
 To run CUSANI, make sure that you have Python (3 or later) installed.
 
