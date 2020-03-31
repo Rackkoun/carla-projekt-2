@@ -630,8 +630,8 @@ class BasicSynchronousClient(object):
 
     #here we create a thread, to wait a specific time before taking images
     def run(self):
-        #wait=5
-        wait=None
+        wait=5
+        #wait=None
         saving_Thread=threading.Thread(target=self.save_image_tread_process,args=(wait,))
         print("saving thread started with wait time:",wait)
         saving_Thread.start()

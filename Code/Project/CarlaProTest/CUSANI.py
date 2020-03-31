@@ -451,7 +451,7 @@ class Toplevel1:
 
         else:
             print("Empty List Nothing to Select")
-    
+
     #Load all files of selected folder in the Listbox left
     def loadFiles(self):
         a=CUSANI_Support.Checkbutton1_Var.get() #check if original is selected
@@ -541,8 +541,8 @@ class Toplevel1:
 
         for x in all_Files_List:
             self.File_List_Box.insert(tk.END, x) #we insert the files names in the ListBox right
-            
-            
+
+
     #function call when we have clicked on "Start"
     def load_all_json_files_and_original_images_to_create_treated_images(self):
 
@@ -551,7 +551,6 @@ class Toplevel1:
         path_name_treated = process_data_file.read_List_Folder_Settings()[1] #treated Folder Path
         path_name_json = process_data_file.read_List_Folder_Settings()[2] #Json Folder path
 
-
         try:
 
             if not os.path.exists(path_name_treated):
@@ -559,7 +558,7 @@ class Toplevel1:
             else:
                 shutil.rmtree(path_name_treated)  # Removes all the subdirectories!
                                                   #delete the Folder Treated (and all the photos inside) in order to remove all the previous created files
-                os.makedirs(path_name_treated)  #create the a new empty folder treated 
+                os.makedirs(path_name_treated)  #create the a new empty folder treated
 
             print("Directory of Treated Images clear ", path_name_treated)
 
@@ -567,82 +566,25 @@ class Toplevel1:
             print("Directory of Treated Images not clear, there is an error ", path_name_treated)
 
 
+        color_red = (0, 0, 255)
+
+        color_green = (0, 255, 0)
 
 
-        new_path_name = path_name_json + "/*.json"
-        files_list = glob.glob(new_path_name) #list all files with extension .json in the Json folder
-        print("nomber of Json Files found:", len(files_list))
-
-        #key to fetch data in the Json Files
-        letters_to_delete = 9
-        vehicle_key = "vehicles"
-        walkers_key = "walkers"
-        min_x_key = "min_x"
-        max_x_key = "max_x"
-        min_y_key = "min_y"
-        max_y_key = "max_y"
+        original_absolute_path_name_list,treated_absolute_path_name_list,all_vehicles_list, all_walkers_list = 	process_data_file.read_json()
 
 
-        original_absolute_path_name_list = []
-        treated_absolute_path_name_list = []
+        for i in range (len(original_absolute_path_name_list)):
 
-        for file in files_list:
-            print("processing the Json File:",file)
-            path, file_name = os.path.split(file) #we got here the parent path and the filename from the absolute path of the Json file
-            print("Complet Filename:",file_name)
-            json_file_name_only = file_name[0:len(file_name) - letters_to_delete] #we remoce the extension and the part"_Json" from the Json filename
-            print("Json File Name only:",json_file_name_only)
-            original_absolute_path_name = path_name_original + "/" + json_file_name_only + "Original.jpeg" #we reconstruct the Originale absolute path
-            treated_absolute_path_name = path_name_treated + "/" + json_file_name_only + "Treated.jpeg" #we create the Treated absolute path
+            my_image = cv2.imread(original_absolute_path_name_list[i]) #read the original image file with opencv
 
-            print("trying to open original file:", original_absolute_path_name)
-            print("trying to open json file:", file)
+            array_image = process_data_file.draw_box_1(my_image, all_vehicles_list[i], color_red) #draw the boxes of all vehicles in color red
 
-            if os.path.isfile(original_absolute_path_name) and os.path.isfile(file):
-                print("original image file found and Json file found")
-                
-                #open the Json file and load all his content in a Json data variable
-                with open(file) as f:
-                    json_data = json.load(f)
+            array_image = process_data_file.draw_box_1(array_image, all_walkers_list[i], color_green) #draw the boxes of all walkers in color green
 
-                if (json_data != None):
+            process_data_file.save_image(treated_absolute_path_name_list[i], array_image) #the te files obtained after drawing the boxes in the Treated Folder
 
-                    original_absolute_path_name_list.append(original_absolute_path_name)
-                    treated_absolute_path_name_list.append(treated_absolute_path_name)
 
-                    print("Json File not empty and data Loaded")
-                    vehicles = json_data[vehicle_key] #all the vehicles
-                    walkers = json_data[walkers_key]  # all the walkers
-
-                    all_vehicles = []
-                    all_walkers = []
-        
-                    #fetch all the coordinates of vehicles
-                    for vehicle in vehicles:
-                        coordinate = (vehicle[min_x_key], vehicle[min_y_key], vehicle[max_x_key], vehicle[max_y_key])
-                        all_vehicles.append(coordinate)
-                    print("number of vehicles found:",len(all_vehicles))
-
-                    #fetch all the coordinates of walkers
-                    for walker in walkers:
-                        coordinate = (walker[min_x_key], walker[min_y_key], walker[max_x_key], walker[max_y_key])
-                        all_walkers.append(coordinate)
-
-                    print("number of walkers found:", len(all_walkers))
-
-                    my_image = cv2.imread(original_absolute_path_name) #read the original image file with opencv
-
-                    array_image = process_data_file.draw_box_1(my_image, all_vehicles, (0, 0, 255)) #draw the boxes of all vehicles in color red
-
-                    array_image = process_data_file.draw_box_1(array_image, all_walkers, (0, 255, 0)) #draw the boxes of all walkers in color green
-
-                    process_data_file.save_image(treated_absolute_path_name, array_image) #the te files obtained after drawing the boxes in the Treated Folder
-
-                else:
-                    print("No data found, Json file Empty or not opened properly")
-
-            else:
-                print("one of the file (Json or Original) not found")
         print("Creation of Boxes finished")
 
 

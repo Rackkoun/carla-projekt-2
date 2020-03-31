@@ -1,3 +1,4 @@
+import glob
 import os
 
 from PIL import Image
@@ -137,3 +138,98 @@ class process_data_file:
                 print(x)
 
         return folder_List
+
+
+	    #function call when we have clicked on "Start"
+
+    #read The Json Files and return the Coordinates of Vehicles and Walkers
+
+
+    def read_json():
+
+        #saving the Location of our folders in variables
+        path_name_original = process_data_file.read_List_Folder_Settings()[0] #original folder path
+        path_name_treated = process_data_file.read_List_Folder_Settings()[1] #treated Folder Path
+        path_name_json = process_data_file.read_List_Folder_Settings()[2] #Json Folder path
+
+        new_path_name = path_name_json + "/*.json"
+        files_list = glob.glob(new_path_name) #list all files with extension .json in the Json folder
+        print("nomber of Json Files found:", len(files_list))
+
+        #key to fetch data in the Json Files
+        letters_to_delete = 9  #number of letter generated  for the filename
+        vehicle_key = "vehicles"
+        walkers_key = "walkers"
+        min_x_key = "min_x"
+        max_x_key = "max_x"
+        min_y_key = "min_y"
+        max_y_key = "max_y"
+
+
+        original_absolute_path_name_list = []
+        treated_absolute_path_name_list = []
+        all_walkers_list = []
+        all_vehicles_list = []
+
+        for file in files_list:
+            print("processing the Json File:",file)
+            path, file_name = os.path.split(file) #we got here the parent path and the filename from the absolute path of the Json file
+            print("Complet Filename:",file_name)
+            json_file_name_only = file_name[0:len(file_name) - letters_to_delete] #we remoce the extension and the part"_Json" from the Json filename
+            print("Json File Name only:",json_file_name_only)
+            original_absolute_path_name = path_name_original + "/" + json_file_name_only + "Original.jpeg" #we reconstruct the Originale absolute path
+            treated_absolute_path_name = path_name_treated + "/" + json_file_name_only + "Treated.jpeg" #we create the Treated absolute path
+
+            print("trying to open original file:", original_absolute_path_name)
+            print("trying to open json file:", file)
+
+            if os.path.isfile(original_absolute_path_name) and os.path.isfile(file):
+                print("original image file found and Json file found")
+                
+                #open the Json file and load all his content in a Json data variable
+                with open(file) as f:
+                    json_data = json.load(f)
+
+                if (json_data != None):
+
+                    original_absolute_path_name_list.append(original_absolute_path_name)
+                    treated_absolute_path_name_list.append(treated_absolute_path_name)
+
+                    print("Json File not empty and data Loaded")
+                    vehicles = json_data[vehicle_key] #all the vehicles
+                    walkers = json_data[walkers_key]  # all the walkers
+
+                    all_vehicles = []
+                    all_walkers = []
+        
+                    #fetch all the coordinates of vehicles
+                    for vehicle in vehicles:
+                        coordinate = (vehicle[min_x_key], vehicle[min_y_key], vehicle[max_x_key], vehicle[max_y_key])
+                        all_vehicles.append(coordinate)
+                    print("number of vehicles found:",len(all_vehicles))
+
+                    #fetch all the coordinates of walkers
+                    for walker in walkers:
+                        coordinate = (walker[min_x_key], walker[min_y_key], walker[max_x_key], walker[max_y_key])
+                        all_walkers.append(coordinate)
+
+                    print("number of walkers found:", len(all_walkers))
+
+                else:
+                    print("No data found, Json file Empty or not opened properly")
+
+            else:
+                print("one of the file (Json or Original) not found")
+
+            all_vehicles_list.append(all_vehicles)
+            all_walkers_list.append(all_walkers)
+
+
+
+
+
+        #we return original_absolute_path_name_list, treated_absolute_path_name_list, all_vehicles_all_walkers
+        return original_absolute_path_name_list,treated_absolute_path_name_list,all_vehicles_list, all_walkers_list
+
+                  
+

@@ -1,0 +1,26 @@
+{
+    "number_of_vehicles": 1,
+    "vehicles": [
+        {
+            "max_y": 681,
+            "min_x": 586,
+            "min_y": 424,
+            "max_x": 693
+        }
+    ],
+    "number_of_walkers": 2,
+    "walkers": [
+        {
+            "max_y": 356,
+            "min_x": 1205,
+            "min_y": 341,
+            "max_x": 1223
+        },
+        {
+            "max_y": 350,
+            "min_x": 393,
+            "min_y": 326,
+            "max_x": 407
+        }
+    ]
+}
