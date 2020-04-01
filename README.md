@@ -1,8 +1,20 @@
 # Projekt 2
 
-This project is currently implemented using Carla-API Version 0.9.6 for Linux. The actually available version for Windows is the Carla API 0.9.5. The changes made in the API 0.9.6 do not allow you to test your code with older API-Version because.
+This project present CUSANI as a way to use simulators to create a synthetic image-based dataset and it correspon-
+ding annotation for computer vision tasks.
 
-### Problems while using Carla-API
+
+# CUSANI
+
+
+The CUstom Annotation's generator for Identification of vehicles ans pedestrians in synthetically created images
+using the CARLA-simulator (CUSANI) is a simple software implemented with Python, that extends the features of the
+CARLA-simulator to a synthetic image-based dataset.
+
+## Goal and requirement
+
+The software is implemented to evaluate the perception task in self-driving expecially for the identification
+of vehicles and pedestrians in an image using a 2D bounding-box.
 
 #### Debugging an object
 While debugging an object in movement, the box can appear move back to the current position of the object.
